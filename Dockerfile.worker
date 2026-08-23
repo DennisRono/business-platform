@@ -1,0 +1,29 @@
+# Background worker image. Shares the same build base as the API image but
+# launches the worker entrypoint instead of uvicorn.
+FROM python:3.11-slim AS builder
+
+ENV POETRY_VERSION=1.8.3 \
+    POETRY_VIRTUALENVS_IN_PROJECT=true \
+    PIP_NO_CACHE_DIR=1
+
+WORKDIR /app
+RUN pip install "poetry==${POETRY_VERSION}"
+COPY pyproject.toml ./
+RUN poetry install --only main --no-root
+
+FROM python:3.11-slim AS runtime
+
+ENV PATH="/app/.venv/bin:$PATH" \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
+
+WORKDIR /app
+COPY --from=builder /app/.venv /app/.venv
+COPY . .
+
+RUN useradd --create-home --uid 1000 appuser && chown -R appuser:appuser /app
+USER appuser
+
+# Placeholder worker entrypoint — swap for the real queue consumer once one
+# exists (e.g. `python -m business_platform.worker`).
+CMD ["python", "-m", "business_platform.worker"]

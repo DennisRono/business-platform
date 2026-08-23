@@ -1,0 +1,10 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: business-platform
+  namespace: business-platform
+rules:
+  # Minimal namespace-scoped read access to the config/secrets the pod needs.
+  - apiGroups: [""]
+    resources: ["configmaps", "secrets"]
+    verbs: ["get", "list", "watch"]

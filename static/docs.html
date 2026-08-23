@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>business-platform · API Explorer</title>
+    <script
+      type="module"
+      src="https://unpkg.com/rapidoc/dist/rapidoc-min.js"
+    ></script>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <rapi-doc
+      spec-url="/openapi.json"
+      theme="dark"
+      bg-color="#0f1117"
+      text-color="#e6e6e6"
+      primary-color="#5b8def"
+      render-style="read"
+      show-header="true"
+      allow-authentication="true"
+      allow-server-selection="true"
+      allow-spec-url-load="false"
+      allow-spec-file-load="false"
+      heading-text="business-platform API"
+    ></rapi-doc>
+  </body>
+</html>
