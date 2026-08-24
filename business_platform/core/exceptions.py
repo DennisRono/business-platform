@@ -43,7 +43,7 @@ class AuthorizationError(AppError):
 
 
 class ValidationError(AppError):
-    status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
+    status_code = status.HTTP_422_UNPROCESSABLE_CONTENT
     message = "The submitted data is invalid."
 
 
@@ -107,7 +107,7 @@ class PreconditionFailedError(AppError):
 class PayloadTooLargeError(AppError):
     """The request payload is larger than the server is willing or able to process."""
 
-    status_code = status.HTTP_413_PAYLOAD_TOO_LARGE
+    status_code = status.HTTP_413_CONTENT_TOO_LARGE
     message = "The request payload is too large."
 
 
