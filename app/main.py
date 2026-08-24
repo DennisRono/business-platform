@@ -42,7 +42,6 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
 
-    # ── Middleware (outermost first) ─────────────────────────────────────────
     app.add_middleware(SecurityHeadersMiddleware)
     app.add_middleware(RateLimitMiddleware)
     app.add_middleware(PermissionCheckerMiddleware)
@@ -55,10 +54,8 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
-    # ── Exception handlers ───────────────────────────────────────────────────
     register_exception_handlers(app)
 
-    # ── Routes ───────────────────────────────────────────────────────────────
     app.include_router(api_router, prefix=settings.API_V1_PREFIX)
 
     if _STATIC_DIR.exists():

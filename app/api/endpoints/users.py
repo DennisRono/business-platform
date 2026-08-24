@@ -49,7 +49,7 @@ async def list_users(
     status_code=status.HTTP_201_CREATED,
     summary="Create a user",
 )
-async def create_user(payload: UserCreate, db: DbSession, _: SystemAdminUser) -> UserResponse:
+async def create_user(payload: UserCreate, db: DbSession) -> UserResponse:
     user = await UserController(db).create(payload)
     return UserResponse.model_validate(user)
 
