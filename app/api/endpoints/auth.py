@@ -1,0 +1,67 @@
+from __future__ import annotations
+
+from typing import Any
+
+from fastapi import (
+    APIRouter,
+    Body,
+    Depends,
+    HTTPException,
+    status,
+)
+from fastapi.security import OAuth2PasswordRequestForm
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from business_platform.controllers.auth import AuthController
+from business_platform.db.database import get_db
+from business_platform.dependencies.auth import GetCurrentUser
+from business_platform.schemas.user import Token, UserCreate, UserResponse
+
+
+auth_router = APIRouter()
+auth_controller = AuthController()
+
+
+@auth_router.post(
+    "/register", status_code=status.HTTP_201_CREATED, response_model=Token
+)
+async def register_user(payload: UserCreate, db: AsyncSession = Depends(get_db)):
+    return await auth_controller.register_user(payload=payload.model_dump(), db=db)
+
+
+@auth_router.post(
+    "/login", status_code=status.HTTP_200_OK, response_model=Token
+)
+async def login(
+    form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)
+):
+    return await auth_controller.login(form_data=form_data, db=db)
+
+
+@auth_router.post("/logout", status_code=status.HTTP_200_OK)
+async def logout(
+    current_user: GetCurrentUser,
+    db: AsyncSession = Depends(get_db),
+):
+    return await auth_controller.logout(current_user=current_user, db=db)
+
+
+@auth_router.post("/token/refresh", response_model=Token)
+async def refresh_token(
+    payload: dict[str, Any] = Body(
+        ..., example={"refresh_token": "your_refresh_token"}
+    ),
+    db: AsyncSession = Depends(get_db),
+):
+    refresh_token = payload.get("refresh_token")
+    if not refresh_token:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Refresh token is required"
+        )
+    return await auth_controller.refresh_token(refresh_token=refresh_token, db=db)
+
+
+@auth_router.get("/me", response_model=UserResponse)
+async def me(current_user: GetCurrentUser, db: AsyncSession = Depends(get_db)):
+    return await auth_controller.me(current_user=current_user, db=db)
+

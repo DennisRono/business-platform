@@ -1,12 +1,3 @@
-"""Authentication dependency layer.
-
-Exposes :data:`GetCurrentUser` — a typed FastAPI dependency that extracts and
-verifies the bearer access token, then hands the handler a small, immutable
-``CurrentUser`` describing the caller (``sub``, ``username``, ``entity_id``,
-``role``). Token *issuance* lives in ``core/security.py``; this module is the
-verification/identity side used at request time.
-"""
-
 from __future__ import annotations
 
 import uuid
@@ -21,9 +12,8 @@ from business_platform.core.exceptions import AuthenticationError
 from business_platform.core.security import JWTError, decode_token
 from business_platform.utils.enums import Role, TokenType
 
-# tokenUrl is where clients POST credentials to obtain a token (login route).
 oauth2_scheme = OAuth2PasswordBearer(
-    tokenUrl=f"{settings.API_V1_PREFIX}/users/login",
+    tokenUrl=f"{settings.API_V1_PREFIX}/login",
     auto_error=False,
 )
 
@@ -76,5 +66,4 @@ async def get_current_user(
     )
 
 
-# Typed alias used throughout endpoints:  user: GetCurrentUser
 GetCurrentUser = Annotated[CurrentUser, Depends(get_current_user)]

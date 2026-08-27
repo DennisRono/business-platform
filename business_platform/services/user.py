@@ -8,7 +8,7 @@ commit explicitly.
 
 from __future__ import annotations
 
-from business_platform.controllers.user import UserController
+from business_platform.controllers.auth.user import UserController
 from business_platform.db.database import AsyncSessionLocal
 from business_platform.models.user import User
 from business_platform.schemas.user import UserCreate
