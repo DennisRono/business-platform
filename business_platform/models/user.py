@@ -1,9 +1,3 @@
-"""User ORM model.
-
-Inherits every audit column (id, timestamps, actor tracking, soft delete,
-version) from :class:`BaseModel`, so this file declares only user-specific
-fields.
-"""
 
 from __future__ import annotations
 

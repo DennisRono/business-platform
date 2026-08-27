@@ -11,5 +11,6 @@ from __future__ import annotations
 
 from business_platform.db.base import Base, BaseModel
 from business_platform.models.user import User
+from business_platform.models.businesses import Business, BusinessOwnership
 
-__all__ = ["Base", "BaseModel", "User"]
+__all__ = ["Base", "BaseModel", "User", "Business", "BusinessOwnership"]

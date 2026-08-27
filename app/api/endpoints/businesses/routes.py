@@ -11,22 +11,22 @@ from business_platform.utils.constants import DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE
 from business_platform.db.database import get_db
 from business_platform.dependencies.auth import GetCurrentUser
 from business_platform.dependencies.authorization import (
-	BusinessAccessUser,
-	BusinessOwnerOrAdminUser,
+    BusinessAccessUser,
+    BusinessOwnerOrAdminUser,
 )
 
-from .compensation import router as compensation_router
-from .documents import router as documents_router
-from .employees import router as employees_router
-from .events import router as events_router
-from .financials import router as financials_router
-from .leaders import router as leaders_router
-from .memberships import router as memberships_router
-from .owners import router as owners_router
-from .people import router as business_people_router
-from .relationships import router as relationships_router
-from .taxes import router as taxes_router
-from .tasks import router as tasks_router
+from app.api.endpoints.businesses.compensation import router as compensation_router
+from app.api.endpoints.businesses.documents import router as documents_router
+from app.api.endpoints.businesses.employees import router as employees_router
+from app.api.endpoints.businesses.events import router as events_router
+from app.api.endpoints.businesses.financials import router as financials_router
+from app.api.endpoints.businesses.leaders import router as leaders_router
+from app.api.endpoints.businesses.memberships import router as memberships_router
+from app.api.endpoints.businesses.owners import router as owners_router
+from app.api.endpoints.businesses.people import router as business_people_router
+from app.api.endpoints.businesses.relationships import router as relationships_router
+from app.api.endpoints.businesses.taxes import router as taxes_router
+from app.api.endpoints.businesses.tasks import router as tasks_router
 
 router = APIRouter(prefix="/businesses", tags=["businesses"])
 
@@ -36,53 +36,53 @@ DbSession: TypeAlias = Annotated[AsyncSession, Depends(get_db)]
 # ── Business root ───────────────────────────────────────────────────────────
 @router.get("/", summary="List businesses")
 async def list_businesses(
-	db: DbSession,
-	_: BusinessAccessUser,
-	skip: int = Query(0, ge=0),
-	limit: int = Query(DEFAULT_PAGE_SIZE, ge=1, le=MAX_PAGE_SIZE),
+    db: DbSession,
+    current_user: BusinessAccessUser,
+    skip: int = Query(0, ge=0),
+    limit: int = Query(DEFAULT_PAGE_SIZE, ge=1, le=MAX_PAGE_SIZE),
 ) -> Any:
-	return await BusinessController(db).get_all(skip=skip, limit=limit)
+    return await BusinessController(db).get_all(current_user=current_user, skip=skip, limit=limit)
 
 
 @router.post(
-	"/",
-	status_code=status.HTTP_201_CREATED,
-	summary="Create a business",
+    "/",
+    status_code=status.HTTP_201_CREATED,
+    summary="Create a business",
 )
 async def create_business(payload: dict[str, Any], db: DbSession, _: GetCurrentUser) -> Any:
-	return await BusinessController(db).create(payload)
+    return await BusinessController(db).create(payload)
 
 
 @router.get("/{business_id}", summary="Get a business by id")
 async def get_business(
-	db: DbSession,
-	_: BusinessAccessUser,
-	business_id: uuid.UUID,
+    db: DbSession,
+    _: BusinessAccessUser,
+    business_id: uuid.UUID,
 ) -> Any:
-	return await BusinessController(db).get_by_id(business_id)
+    return await BusinessController(db).get_by_id(business_id)
 
 
 @router.patch("/{business_id}", summary="Update a business")
 async def update_business(
-	payload: dict[str, Any],
-	db: DbSession,
-	_: BusinessAccessUser,
-	business_id: uuid.UUID,
+    payload: dict[str, Any],
+    db: DbSession,
+    _: BusinessAccessUser,
+    business_id: uuid.UUID,
 ) -> Any:
-	return await BusinessController(db).update(business_id, payload)
+    return await BusinessController(db).update(business_id, payload)
 
 
 @router.delete(
-	"/{business_id}",
-	status_code=status.HTTP_204_NO_CONTENT,
-	summary="Soft-delete a business",
+    "/{business_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Soft-delete a business",
 )
 async def delete_business(
-	db: DbSession,
-	_: BusinessOwnerOrAdminUser,
-	business_id: uuid.UUID,
+    db: DbSession,
+    _: BusinessOwnerOrAdminUser,
+    business_id: uuid.UUID,
 ) -> None:
-	await BusinessController(db).delete(business_id)
+    await BusinessController(db).delete(business_id)
 
 
 # Re-export subresource routers under the /businesses prefix.
