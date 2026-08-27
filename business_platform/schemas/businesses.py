@@ -4,7 +4,7 @@ import uuid
 from datetime import date, datetime
 from decimal import Decimal
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, HttpUrl
 
 from business_platform.utils.enums import (
     BusinessStatus,
@@ -138,9 +138,145 @@ class BusinessBase(BaseModel):
     )
 
 
-class BusinessCreate(BusinessBase):
-    owner_user_id: uuid.UUID
 
+class BusinessCreate(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+        str_strip_whitespace=True,
+    )
+
+    name: str = Field(
+        ...,
+        min_length=1,
+        max_length=255,
+        description="Legal or primary business name",
+    )
+
+    legal_name: str | None = Field(
+        default=None,
+        max_length=255,
+    )
+
+    display_name: str | None = Field(
+        default=None,
+        max_length=255,
+    )
+
+    description: str | None = Field(
+        default=None,
+        max_length=10000,
+    )
+
+    business_type: BusinessType = Field(
+        default=BusinessType.BUSINESS,
+    )
+
+    legal_structure: LegalStructure | None = None
+
+    status: BusinessStatus = Field(
+        default=BusinessStatus.ACTIVE,
+    )
+
+    registration_number: str | None = Field(
+        default=None,
+        max_length=100,
+    )
+
+    tax_identification_number: str | None = Field(
+        default=None,
+        max_length=100,
+    )
+
+    incorporation_date: date | None = None
+
+    country_of_incorporation: str | None = Field(
+        default=None,
+        max_length=100,
+    )
+
+    state_of_incorporation: str | None = Field(
+        default=None,
+        max_length=100,
+    )
+
+    email: EmailStr | None = None
+
+    phone: str | None = Field(
+        default=None,
+        max_length=50,
+    )
+
+    website: HttpUrl | None = None
+
+    address_line_1: str | None = Field(
+        default=None,
+        max_length=255,
+    )
+
+    address_line_2: str | None = Field(
+        default=None,
+        max_length=255,
+    )
+
+    city: str | None = Field(
+        default=None,
+        max_length=100,
+    )
+
+    state: str | None = Field(
+        default=None,
+        max_length=100,
+    )
+
+    postal_code: str | None = Field(
+        default=None,
+        max_length=30,
+    )
+
+    country: str | None = Field(
+        default=None,
+        max_length=100,
+    )
+
+    industry: str | None = Field(
+        default=None,
+        max_length=150,
+    )
+
+    industry_code: str | None = Field(
+        default=None,
+        max_length=50,
+    )
+
+    employee_count: int | None = Field(
+        default=None,
+        ge=0,
+    )
+
+    annual_revenue: Decimal | None = Field(
+        default=None,
+        ge=0,
+        decimal_places=2,
+        max_digits=20,
+    )
+
+    currency: str | None = Field(
+        default=None,
+        min_length=3,
+        max_length=3,
+    )
+
+    is_public: bool = False
+
+    stock_symbol: str | None = Field(
+        default=None,
+        max_length=20,
+    )
+
+    stock_exchange: str | None = Field(
+        default=None,
+        max_length=50,
+    )
 
 class BusinessUpdate(BaseModel):
     name: str | None = Field(

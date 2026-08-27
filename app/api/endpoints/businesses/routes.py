@@ -6,7 +6,8 @@ from typing import Annotated, Any, TypeAlias
 from fastapi import APIRouter, Depends, Path, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from business_platform.controllers import BusinessController
+from business_platform.controllers.businesses.index import BusinessController
+from business_platform.schemas.businesses import BusinessCreate
 from business_platform.utils.constants import DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE
 from business_platform.db.database import get_db
 from business_platform.dependencies.auth import GetCurrentUser
@@ -40,8 +41,16 @@ async def list_businesses(
     current_user: BusinessAccessUser,
     skip: int = Query(0, ge=0),
     limit: int = Query(DEFAULT_PAGE_SIZE, ge=1, le=MAX_PAGE_SIZE),
+    q: str | None = Query(None),
+    sort: str | None = Query(None),
 ) -> Any:
-    return await BusinessController(db).get_all(current_user=current_user, skip=skip, limit=limit)
+    return await BusinessController(db).get_all(
+        current_user=current_user,
+        skip=skip,
+        limit=limit,
+        q=q,
+        sort=sort,
+    )
 
 
 @router.post(
@@ -49,8 +58,15 @@ async def list_businesses(
     status_code=status.HTTP_201_CREATED,
     summary="Create a business",
 )
-async def create_business(payload: dict[str, Any], db: DbSession, _: GetCurrentUser) -> Any:
-    return await BusinessController(db).create(payload)
+async def create_business(
+    payload: BusinessCreate,
+    db: DbSession,
+    current_user: GetCurrentUser,
+) -> Any:
+    return await BusinessController(db).create(
+        payload.model_dump(exclude_none=True),
+        current_user=current_user,
+    )
 
 
 @router.get("/{business_id}", summary="Get a business by id")
