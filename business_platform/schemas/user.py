@@ -1,75 +1,63 @@
-"""Pydantic v2 request/response contracts for the users domain.
-
-Follows the fixed Base / Create / Update / Response shape. ``ConfigDict
-(from_attributes=True)`` (never the removed ``orm_mode``) lets Response models
-be built directly from ORM instances.
 """
-
-from __future__ import annotations
-
+User & Auth Schemas
+Pydantic v2 schemas for the Auth domain. UserCreate/UserResponse/Token
+mirror the shapes already published in the OpenAPI spec field-for-field
+so the contract does not shift; UserUpdate is added for the admin PATCH
+flow the current spec doesn't yet expose.
+"""
 import uuid
 from datetime import datetime
-from typing import Annotated
+from typing import Optional
 
-from pydantic import AfterValidator, BaseModel, ConfigDict, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, ConfigDict
 
 from business_platform.utils.enums import Role
-from business_platform.utils.validators import validate_password_strength
-
-Password = Annotated[str, AfterValidator(validate_password_strength)]
 
 
-class UserBase(BaseModel):
-    """Fields shared across create/update/response."""
+class UserCreate(BaseModel):
+    """Payload for POST /api/v1/dashboard/register."""
+    username: str = Field(..., min_length=3, max_length=50)
+    email: EmailStr = Field(...)
+    full_name: Optional[str] = Field(None, max_length=255)
+    role: Role = Field(default=Role.CUSTOMER)
+    password: str = Field(..., min_length=8)
 
-    username: str = Field(min_length=3, max_length=50)
-    email: EmailStr
-    full_name: str | None = Field(default=None, max_length=255)
-    role: Role = Role.CUSTOMER
-
-
-class UserCreate(UserBase):
-    """Payload for POST /users."""
-
-    password: Password
+    model_config = ConfigDict(extra="ignore")
 
 
 class UserUpdate(BaseModel):
-    """Payload for PATCH /users/{id}; every field optional."""
+    """Schema for partially updating a user account. All fields optional."""
+    full_name: Optional[str] = Field(None, max_length=255)
+    role: Optional[Role] = None
+    is_active: Optional[bool] = None
 
-    username: str | None = Field(default=None, min_length=3, max_length=50)
-    email: EmailStr | None = None
-    full_name: str | None = Field(default=None, max_length=255)
-    role: Role | None = None
-    is_active: bool | None = None
-    password: Password | None = None
+    model_config = ConfigDict(extra="ignore")
 
 
-class UserResponse(UserBase):
-    """Public representation returned to clients — never includes the hash."""
-
-    model_config = ConfigDict(from_attributes=True)
-
+class UserResponse(BaseModel):
+    """
+    Public representation returned to clients — never includes the
+    password hash. Matches the OpenAPI UserResponse component exactly.
+    """
+    username: str = Field(..., max_length=50, min_length=3)
+    email: EmailStr
+    full_name: Optional[str] = Field(None, max_length=255)
+    role: Role = Field(default=Role.CUSTOMER)
     id: uuid.UUID
     is_active: bool
     created_at: datetime
     updated_at: datetime
 
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True, extra="ignore")
 
-# ── Auth-flow schemas ────────────────────────────────────────────────────────
+
 class Token(BaseModel):
     """Access + refresh token pair returned by login / refresh."""
-
     access_token: str
     refresh_token: str
     token_type: str = "bearer"
 
-
-class LoginRequest(BaseModel):
-    """Username + password login payload (JSON variant)."""
-
-    username: str
-    password: str
+    model_config = ConfigDict(extra="ignore")
 
 
 class RefreshRequest(BaseModel):
