@@ -10,12 +10,12 @@ from business_platform.controllers import ContactController
 from business_platform.db.database import get_db
 from business_platform.dependencies.auth import GetCurrentUser
 
-router = APIRouter(prefix="/contacts", tags=["contacts"])
+contacts_router = APIRouter()
 
 DbSession: TypeAlias = Annotated[AsyncSession, Depends(get_db)]
 
 
-@router.get("/", summary="List contacts")
+@contacts_router .get("/", summary="List contacts")
 async def list_contacts(
     db: DbSession,
     _: GetCurrentUser,
@@ -25,12 +25,12 @@ async def list_contacts(
     return await ContactController(db).get_all(skip=skip, limit=limit)
 
 
-@router.post("/", status_code=status.HTTP_201_CREATED, summary="Create a contact")
+@contacts_router .post("/", status_code=status.HTTP_201_CREATED, summary="Create a contact")
 async def create_contact(payload: dict[str, Any], db: DbSession, _: GetCurrentUser) -> Any:
     return await ContactController(db).create(payload)
 
 
-@router.get("/{contact_id}", summary="Get a contact by id")
+@contacts_router .get("/{contact_id}", summary="Get a contact by id")
 async def get_contact(
     db: DbSession,
     _: GetCurrentUser,

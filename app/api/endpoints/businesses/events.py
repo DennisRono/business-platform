@@ -11,12 +11,12 @@ from business_platform.controllers import EventController
 from business_platform.db.database import get_db
 from business_platform.dependencies.authorization import BusinessAccessUser
 
-router = APIRouter(tags=["businesses"])
+businesses_events_router = APIRouter()
 
 DbSession: TypeAlias = Annotated[AsyncSession, Depends(get_db)]
 
 
-@router.get("/{business_id}/events", summary="List events")
+@businesses_events_router.get("/{business_id}/events", summary="List events")
 async def list_events(
     db: DbSession,
     _: BusinessAccessUser,
@@ -39,7 +39,7 @@ async def list_events(
     )
 
 
-@router.post(
+@businesses_events_router.post(
     "/{business_id}/events",
     status_code=status.HTTP_201_CREATED,
     summary="Create an event",
@@ -53,7 +53,7 @@ async def create_event(
     return await EventController(db).create(business_id, payload)
 
 
-@router.patch("/{business_id}/events/{event_id}", summary="Update an event")
+@businesses_events_router.patch("/{business_id}/events/{event_id}", summary="Update an event")
 async def update_event(
     payload: dict[str, Any],
     db: DbSession,

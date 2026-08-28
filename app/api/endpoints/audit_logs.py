@@ -10,12 +10,12 @@ from business_platform.controllers import AuditLogController
 from business_platform.db.database import get_db
 from business_platform.dependencies.authorization import AuditLogAccessUser
 
-router = APIRouter(prefix="/audit-logs", tags=["audit-logs"])
+audit_logs_router = APIRouter()
 
 DbSession: TypeAlias = Annotated[AsyncSession, Depends(get_db)]
 
 
-@router.get("/", summary="List audit logs")
+@audit_logs_router .get("/", summary="List audit logs")
 async def list_audit_logs(
     db: DbSession,
     _: AuditLogAccessUser,

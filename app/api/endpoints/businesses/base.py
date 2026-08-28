@@ -16,26 +16,13 @@ from business_platform.dependencies.authorization import (
     BusinessOwnerOrAdminUser,
 )
 
-from app.api.endpoints.businesses.compensation import router as compensation_router
-from app.api.endpoints.businesses.documents import router as documents_router
-from app.api.endpoints.businesses.employees import router as employees_router
-from app.api.endpoints.businesses.events import router as events_router
-from app.api.endpoints.businesses.financials import router as financials_router
-from app.api.endpoints.businesses.leaders import router as leaders_router
-from app.api.endpoints.businesses.memberships import router as memberships_router
-from app.api.endpoints.businesses.owners import router as owners_router
-from app.api.endpoints.businesses.people import router as business_people_router
-from app.api.endpoints.businesses.relationships import router as relationships_router
-from app.api.endpoints.businesses.taxes import router as taxes_router
-from app.api.endpoints.businesses.tasks import router as tasks_router
-
-router = APIRouter(prefix="/businesses", tags=["businesses"])
+base_router = APIRouter()
 
 DbSession: TypeAlias = Annotated[AsyncSession, Depends(get_db)]
 
 
 # ── Business root ───────────────────────────────────────────────────────────
-@router.get("/", summary="List businesses")
+@base_router.get("/", summary="List businesses")
 async def list_businesses(
     db: DbSession,
     current_user: BusinessAccessUser,
@@ -53,7 +40,7 @@ async def list_businesses(
     )
 
 
-@router.post(
+@base_router.post(
     "/",
     status_code=status.HTTP_201_CREATED,
     summary="Create a business",
@@ -69,7 +56,7 @@ async def create_business(
     )
 
 
-@router.get("/{business_id}", summary="Get a business by id")
+@base_router.get("/{business_id}", summary="Get a business by id")
 async def get_business(
     db: DbSession,
     _: BusinessAccessUser,
@@ -78,7 +65,7 @@ async def get_business(
     return await BusinessController(db).get_by_id(business_id)
 
 
-@router.patch("/{business_id}", summary="Update a business")
+@base_router.patch("/{business_id}", summary="Update a business")
 async def update_business(
     payload: dict[str, Any],
     db: DbSession,
@@ -88,7 +75,7 @@ async def update_business(
     return await BusinessController(db).update(business_id, payload)
 
 
-@router.delete(
+@base_router.delete(
     "/{business_id}",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Soft-delete a business",
@@ -99,18 +86,3 @@ async def delete_business(
     business_id: uuid.UUID,
 ) -> None:
     await BusinessController(db).delete(business_id)
-
-
-# Re-export subresource routers under the /businesses prefix.
-router.include_router(relationships_router)
-router.include_router(memberships_router)
-router.include_router(business_people_router)
-router.include_router(owners_router)
-router.include_router(leaders_router)
-router.include_router(employees_router)
-router.include_router(compensation_router)
-router.include_router(taxes_router)
-router.include_router(documents_router)
-router.include_router(events_router)
-router.include_router(tasks_router)
-router.include_router(financials_router)

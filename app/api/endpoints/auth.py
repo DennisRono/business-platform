@@ -15,7 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from business_platform.controllers.auth import AuthController
 from business_platform.db.database import get_db
 from business_platform.dependencies.auth import GetCurrentUser
-from business_platform.schemas.user import Token, UserCreate, UserResponse
+from business_platform.schemas.user import RefreshRequest, Token, UserCreate, UserResponse
 
 
 auth_router = APIRouter()
@@ -48,17 +48,10 @@ async def logout(
 
 @auth_router.post("/token/refresh", response_model=Token)
 async def refresh_token(
-    payload: dict[str, Any] = Body(
-        ..., example={"refresh_token": "your_refresh_token"}
-    ),
+    payload: RefreshRequest,
     db: AsyncSession = Depends(get_db),
 ):
-    refresh_token = payload.get("refresh_token")
-    if not refresh_token:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Refresh token is required"
-        )
-    return await auth_controller.refresh_token(refresh_token=refresh_token, db=db)
+    return await auth_controller.refresh_token(refresh_token=payload.refresh_token, db=db)
 
 
 @auth_router.get("/me", response_model=UserResponse)

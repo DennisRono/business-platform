@@ -10,12 +10,12 @@ from business_platform.controllers import EmployeeController
 from business_platform.db.database import get_db
 from business_platform.dependencies.authorization import BusinessAccessUser
 
-router = APIRouter(tags=["businesses"])
+businesses_employees_router = APIRouter()
 
 DbSession: TypeAlias = Annotated[AsyncSession, Depends(get_db)]
 
 
-@router.get("/{business_id}/employees", summary="List employees")
+@businesses_employees_router.get("/{business_id}/employees", summary="List employees")
 async def list_employees(
 	db: DbSession,
 	_: BusinessAccessUser,
@@ -24,7 +24,7 @@ async def list_employees(
 	return await EmployeeController(db).get_all(business_id)
 
 
-@router.post(
+@businesses_employees_router.post(
 	"/{business_id}/employees",
 	status_code=status.HTTP_201_CREATED,
 	summary="Create an employee record",
@@ -38,7 +38,7 @@ async def create_employee(
 	return await EmployeeController(db).create(business_id, payload)
 
 
-@router.get("/{business_id}/employees/{person_id}/history", summary="List employee history")
+@businesses_employees_router.get("/{business_id}/employees/{person_id}/history", summary="List employee history")
 async def employee_history(
 	db: DbSession,
 	_: BusinessAccessUser,
@@ -48,7 +48,7 @@ async def employee_history(
 	return await EmployeeController(db).get_history(business_id, person_id)
 
 
-@router.post(
+@businesses_employees_router.post(
 	"/{business_id}/employees/{person_id}/terminate",
 	status_code=status.HTTP_204_NO_CONTENT,
 	summary="Terminate an employee",

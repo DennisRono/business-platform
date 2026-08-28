@@ -10,12 +10,12 @@ from business_platform.controllers import BusinessController
 from business_platform.db.database import get_db
 from business_platform.dependencies.authorization import BusinessAccessUser
 
-router = APIRouter(tags=["businesses"])
+businesses_relationships_router = APIRouter()
 
 DbSession: TypeAlias = Annotated[AsyncSession, Depends(get_db)]
 
 
-@router.get("/{business_id}/relationships", summary="List business relationships")
+@businesses_relationships_router.get("/{business_id}/relationships", summary="List business relationships")
 async def list_relationships(
 	db: DbSession,
 	_: BusinessAccessUser,
@@ -24,7 +24,7 @@ async def list_relationships(
 	return await BusinessController(db).get_relationships(business_id)
 
 
-@router.post(
+@businesses_relationships_router.post(
 	"/{business_id}/relationships",
 	status_code=status.HTTP_201_CREATED,
 	summary="Create a business relationship",

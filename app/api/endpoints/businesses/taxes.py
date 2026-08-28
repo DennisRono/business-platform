@@ -13,12 +13,12 @@ from business_platform.dependencies.authorization import (
     SensitiveDataUser,
 )
 
-router = APIRouter(tags=["businesses"])
+businesses_taxes_router = APIRouter()
 
 DbSession: TypeAlias = Annotated[AsyncSession, Depends(get_db)]
 
 
-@router.get("/{business_id}/taxes", summary="List tax profiles")
+@businesses_taxes_router.get("/{business_id}/taxes", summary="List tax profiles")
 async def list_taxes(
     db: DbSession,
     _: BusinessAccessUser,
@@ -27,7 +27,7 @@ async def list_taxes(
     return await TaxController(db).get_all(business_id)
 
 
-@router.post(
+@businesses_taxes_router.post(
     "/{business_id}/taxes",
     status_code=status.HTTP_201_CREATED,
     summary="Create a tax profile",
@@ -41,7 +41,7 @@ async def create_tax_profile(
     return await TaxController(db).create(business_id, payload)
 
 
-@router.get(
+@businesses_taxes_router.get(
     "/{business_id}/taxes/{tax_profile_id}/identifiers",
     summary="List sensitive tax identifiers",
 )

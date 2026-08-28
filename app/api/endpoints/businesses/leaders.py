@@ -10,12 +10,12 @@ from business_platform.controllers import LeadershipController
 from business_platform.db.database import get_db
 from business_platform.dependencies.authorization import BusinessAccessUser
 
-router = APIRouter(tags=["businesses"])
+businesses_leaders_router = APIRouter()
 
 DbSession: TypeAlias = Annotated[AsyncSession, Depends(get_db)]
 
 
-@router.get("/{business_id}/leaders", summary="List leaders")
+@businesses_leaders_router.get("/{business_id}/leaders", summary="List leaders")
 async def list_leaders(
 	db: DbSession,
 	_: BusinessAccessUser,
@@ -24,7 +24,7 @@ async def list_leaders(
 	return await LeadershipController(db).get_all(business_id)
 
 
-@router.post(
+@businesses_leaders_router.post(
 	"/{business_id}/leaders",
 	status_code=status.HTTP_201_CREATED,
 	summary="Create a leader",

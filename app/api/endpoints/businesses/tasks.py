@@ -11,12 +11,12 @@ from business_platform.controllers import EventController
 from business_platform.db.database import get_db
 from business_platform.dependencies.authorization import BusinessAccessUser
 
-router = APIRouter(tags=["businesses"])
+businesses_tasks_router = APIRouter()
 
 DbSession: TypeAlias = Annotated[AsyncSession, Depends(get_db)]
 
 
-@router.get("/{business_id}/tasks", summary="List tasks")
+@businesses_tasks_router.get("/{business_id}/tasks", summary="List tasks")
 async def list_tasks(
     db: DbSession,
     _: BusinessAccessUser,

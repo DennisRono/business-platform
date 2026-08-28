@@ -10,12 +10,12 @@ from business_platform.controllers import OwnershipController
 from business_platform.db.database import get_db
 from business_platform.dependencies.authorization import BusinessOwnerOrAdminUser
 
-router = APIRouter(tags=["businesses"])
+businesses_owners_router = APIRouter()
 
 DbSession: TypeAlias = Annotated[AsyncSession, Depends(get_db)]
 
 
-@router.get("/{business_id}/owners", summary="List ownership records")
+@businesses_owners_router.get("/{business_id}/owners", summary="List ownership records")
 async def list_owners(
 	db: DbSession,
 	_: BusinessOwnerOrAdminUser,
@@ -24,7 +24,7 @@ async def list_owners(
 	return await OwnershipController(db).get_all(business_id)
 
 
-@router.post(
+@businesses_owners_router.post(
 	"/{business_id}/owners",
 	status_code=status.HTTP_201_CREATED,
 	summary="Create an ownership record",
@@ -38,7 +38,7 @@ async def create_owner(
 	return await OwnershipController(db).create(business_id, payload)
 
 
-@router.patch(
+@businesses_owners_router.patch(
 	"/{business_id}/owners/{ownership_record_id}",
 	summary="Transition an ownership record",
 )
