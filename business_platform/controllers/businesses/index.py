@@ -16,7 +16,14 @@ from business_platform.core.exceptions import (
     DatabaseError,
     NotFoundError,
 )
-
+from business_platform.models.business import Business
+from business_platform.models.business_relationship import BusinessRelationship
+from business_platform.schemas.business import BusinessCreate, BusinessUpdate, BusinessResponse
+from business_platform.schemas.business_relationship import (
+    BusinessRelationshipCreate,
+    BusinessRelationshipResponse,
+)
+from business_platform.utils.enums import BusinessStatus, RelationshipStatus
 
 
 class BusinessController(_StubController):
@@ -36,6 +43,33 @@ class BusinessController(_StubController):
             if current_user.role not in {"admin", "manager"}:
                 raise AuthorizationError(message="Not authorized to list businesses")
 
+            stmt = select(Business).offset(skip).limit(limit)
+
+            if q:
+                stmt = stmt.where(
+                    or_(
+                        Business.name.ilike(f"%{q}%"),
+                        Business.legal_name.ilike(f"%{q}%"),
+                        Business.description.ilike(f"%{q}%"),
+                    )
+                )
+
+            if sort:
+                if sort.startswith("-"):
+                    column_name = sort[1:]
+                    reverse = True
+                else:
+                    column_name = sort
+                    reverse = False
+
+                if hasattr(Business, column_name):
+                    order_column = getattr(Business, column_name)
+                    stmt = stmt.order_by(order_column.desc() if reverse else order_column)
+
+            result = await db.execute(stmt)
+            businesses = result.scalars().all()
+
+            return [BusinessResponse.model_validate(business) for business in businesses]
 
         except SQLAlchemyError as exc:
             raise DatabaseError(message="Failed to fetch businesses") from exc
@@ -49,7 +83,17 @@ class BusinessController(_StubController):
         db = db or self.db
 
         try:
-            pass
+
+            business_create = BusinessCreate(**payload)
+
+            new_business = Business(**business_create.model_dump(exclude_none=True))
+
+            db.add(new_business)
+            await db.flush()
+
+            await db.refresh(new_business)
+
+            return BusinessResponse.model_validate(new_business)
 
         except BusinessLogicError:
             await db.rollback()
@@ -76,7 +120,14 @@ class BusinessController(_StubController):
         db = db or self.db
 
         try:
-            pass
+            stmt = select(Business).where(Business.id == business_id)
+            result = await db.execute(stmt)
+            business = result.scalar_one_or_none()
+
+            if not business:
+                raise NotFoundError(message=f"Business with ID {business_id} not found")
+
+            return BusinessResponse.model_validate(business)
 
         except NotFoundError:
             raise
@@ -93,7 +144,24 @@ class BusinessController(_StubController):
         db = db or self.db
 
         try:
-            pass
+
+            business_update = BusinessUpdate(**payload)
+
+            stmt = select(Business).where(Business.id == business_id)
+            result = await db.execute(stmt)
+            business = result.scalar_one_or_none()
+
+            if not business:
+                raise NotFoundError(message=f"Business with ID {business_id} not found")
+
+            update_data = business_update.model_dump(exclude_none=True)
+            for key, value in update_data.items():
+                setattr(business, key, value)
+
+            await db.flush()
+            await db.refresh(business)
+
+            return BusinessResponse.model_validate(business)
 
         except NotFoundError:
             await db.rollback()
@@ -124,7 +192,17 @@ class BusinessController(_StubController):
         db = db or self.db
 
         try:
-            pass
+
+            stmt = select(Business).where(Business.id == business_id)
+            result = await db.execute(stmt)
+            business = result.scalar_one_or_none()
+
+            if not business:
+                raise NotFoundError(message=f"Business with ID {business_id} not found")
+
+            business.status = BusinessStatus.DISSOLVED
+
+            await db.flush()
 
         except NotFoundError:
             await db.rollback()
@@ -152,7 +230,22 @@ class BusinessController(_StubController):
         db = db or self.db
 
         try:
-            pass
+
+            stmt = select(Business).where(Business.id == business_id)
+            result = await db.execute(stmt)
+            business = result.scalar_one_or_none()
+
+            if not business:
+                raise NotFoundError(message=f"Business with ID {business_id} not found")
+
+            rel_stmt = select(BusinessRelationship).where(
+                BusinessRelationship.business_id == business_id
+            )
+            rel_result = await db.execute(rel_stmt)
+            relationships = rel_result.scalars().all()
+
+            return [BusinessRelationshipResponse.model_validate(rel) for rel in relationships]
+
         except NotFoundError:
             raise
 
@@ -168,7 +261,40 @@ class BusinessController(_StubController):
         db = db or self.db
 
         try:
-            pass
+
+            rel_create = BusinessRelationshipCreate(**payload)
+
+            stmt = select(Business).where(Business.id == business_id)
+            result = await db.execute(stmt)
+            source_business = result.scalar_one_or_none()
+
+            if not source_business:
+                raise NotFoundError(message=f"Business with ID {business_id} not found")
+
+            stmt = select(Business).where(Business.id == rel_create.related_business_id)
+            result = await db.execute(stmt)
+            related_business = result.scalar_one_or_none()
+
+            if not related_business:
+                raise NotFoundError(
+                    message=f"Related business with ID {rel_create.related_business_id} not found"
+                )
+
+            if business_id == rel_create.related_business_id:
+                raise BusinessLogicError(
+                    message="A business cannot have a relationship with itself"
+                )
+
+            new_relationship = BusinessRelationship(
+                business_id=business_id,
+                **rel_create.model_dump(exclude_none=True),
+            )
+
+            db.add(new_relationship)
+            await db.flush()
+            await db.refresh(new_relationship)
+
+            return BusinessRelationshipResponse.model_validate(new_relationship).model_dump()
 
         except (
             NotFoundError,
