@@ -26,7 +26,7 @@ auth_controller = AuthController()
     "/register", status_code=status.HTTP_201_CREATED, response_model=Token
 )
 async def register_user(payload: UserCreate, db: AsyncSession = Depends(get_db)):
-    return await auth_controller.register_user(payload=payload.model_dump(), db=db)
+    return await auth_controller.register_user(payload=payload, db=db)
 
 
 @auth_router.post(

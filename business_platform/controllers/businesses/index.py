@@ -18,41 +18,50 @@ from business_platform.core.exceptions import (
 )
 from business_platform.models.business import Business
 from business_platform.models.business_relationship import BusinessRelationship
-from business_platform.schemas.business import BusinessCreate, BusinessUpdate, BusinessResponse
+from business_platform.schemas.base import PaginatedResponse
+from business_platform.schemas.business import (
+    BusinessCreate,
+    BusinessResponse,
+    BusinessUpdate,
+)
 from business_platform.schemas.business_relationship import (
     BusinessRelationshipCreate,
     BusinessRelationshipResponse,
 )
-from business_platform.utils.enums import BusinessStatus, RelationshipStatus
+from business_platform.utils.enums import BusinessStatus
 
 
 class BusinessController(_StubController):
-
     async def get_all(
         self,
         current_user: Any,
-        skip: int = 0,
-        limit: int = 20,
+        page: int = 1,
+        size: int = 20,
         q: Optional[str] = None,
         sort: Optional[str] = None,
         db: AsyncSession | None = None,
-    ):
+        url_base: str = "/businesses",
+    ) -> PaginatedResponse[BusinessResponse]:
         db = db or self.db
 
         try:
             if current_user.role not in {"admin", "manager"}:
                 raise AuthorizationError(message="Not authorized to list businesses")
 
-            stmt = select(Business).offset(skip).limit(limit)
+            offset = (page - 1) * size
+
+            stmt = select(Business)
+            count_stmt = select(func.count()).select_from(Business)
 
             if q:
-                stmt = stmt.where(
-                    or_(
-                        Business.name.ilike(f"%{q}%"),
-                        Business.legal_name.ilike(f"%{q}%"),
-                        Business.description.ilike(f"%{q}%"),
-                    )
+                search_filter = or_(
+                    Business.name.ilike(f"%{q}%"),
+                    Business.legal_name.ilike(f"%{q}%"),
+                    Business.description.ilike(f"%{q}%"),
                 )
+
+                stmt = stmt.where(search_filter)
+                count_stmt = count_stmt.where(search_filter)
 
             if sort:
                 if sort.startswith("-"):
@@ -66,11 +75,26 @@ class BusinessController(_StubController):
                     order_column = getattr(Business, column_name)
                     stmt = stmt.order_by(order_column.desc() if reverse else order_column)
 
+            total_result = await db.execute(count_stmt)
+            total = total_result.scalar_one()
+
+            stmt = stmt.offset(offset).limit(size)
+
             result = await db.execute(stmt)
             businesses = result.scalars().all()
 
-            return [BusinessResponse.model_validate(business) for business in businesses]
+            items = [BusinessResponse.model_validate(business) for business in businesses]
 
+            return PaginatedResponse[BusinessResponse].create(
+                items=items,
+                total=total,
+                page=page,
+                size=size,
+                url_base=url_base,
+            )
+
+        except AuthorizationError:
+            raise
         except SQLAlchemyError as exc:
             raise DatabaseError(message="Failed to fetch businesses") from exc
 
@@ -83,14 +107,13 @@ class BusinessController(_StubController):
         db = db or self.db
 
         try:
-
             business_create = BusinessCreate(**payload)
 
             new_business = Business(**business_create.model_dump(exclude_none=True))
 
             db.add(new_business)
-            await db.flush()
 
+            await db.flush()
             await db.refresh(new_business)
 
             return BusinessResponse.model_validate(new_business)
@@ -103,8 +126,10 @@ class BusinessController(_StubController):
             await db.rollback()
 
             raise ConflictError(
-                message="Business could not be created because "
-                "the supplied data conflicts with an existing record"
+                message=(
+                    "Business could not be created because "
+                    "the supplied data conflicts with an existing record"
+                )
             ) from exc
 
         except SQLAlchemyError as exc:
@@ -121,6 +146,7 @@ class BusinessController(_StubController):
 
         try:
             stmt = select(Business).where(Business.id == business_id)
+
             result = await db.execute(stmt)
             business = result.scalar_one_or_none()
 
@@ -144,10 +170,10 @@ class BusinessController(_StubController):
         db = db or self.db
 
         try:
-
             business_update = BusinessUpdate(**payload)
 
             stmt = select(Business).where(Business.id == business_id)
+
             result = await db.execute(stmt)
             business = result.scalar_one_or_none()
 
@@ -155,6 +181,7 @@ class BusinessController(_StubController):
                 raise NotFoundError(message=f"Business with ID {business_id} not found")
 
             update_data = business_update.model_dump(exclude_none=True)
+
             for key, value in update_data.items():
                 setattr(business, key, value)
 
@@ -175,8 +202,10 @@ class BusinessController(_StubController):
             await db.rollback()
 
             raise ConflictError(
-                message="Business could not be updated because "
-                "the supplied data conflicts with an existing record"
+                message=(
+                    "Business could not be updated because "
+                    "the supplied data conflicts with an existing record"
+                )
             ) from exc
 
         except SQLAlchemyError as exc:
@@ -192,8 +221,8 @@ class BusinessController(_StubController):
         db = db or self.db
 
         try:
-
             stmt = select(Business).where(Business.id == business_id)
+
             result = await db.execute(stmt)
             business = result.scalar_one_or_none()
 
@@ -225,26 +254,52 @@ class BusinessController(_StubController):
     async def get_relationships(
         self,
         business_id: UUID,
+        page: int = 1,
+        size: int = 20,
         db: AsyncSession | None = None,
-    ) -> list[dict[str, Any]]:
+        url_base: str = "/businesses",
+    ) -> PaginatedResponse[BusinessRelationshipResponse]:
         db = db or self.db
 
         try:
+            business_stmt = select(Business).where(Business.id == business_id)
 
-            stmt = select(Business).where(Business.id == business_id)
-            result = await db.execute(stmt)
+            result = await db.execute(business_stmt)
             business = result.scalar_one_or_none()
 
             if not business:
                 raise NotFoundError(message=f"Business with ID {business_id} not found")
 
-            rel_stmt = select(BusinessRelationship).where(
-                BusinessRelationship.business_id == business_id
+            offset = (page - 1) * size
+
+            count_stmt = (
+                select(func.count())
+                .select_from(BusinessRelationship)
+                .where(BusinessRelationship.business_id == business_id)
             )
-            rel_result = await db.execute(rel_stmt)
+
+            stmt = (
+                select(BusinessRelationship)
+                .where(BusinessRelationship.business_id == business_id)
+                .offset(offset)
+                .limit(size)
+            )
+
+            total_result = await db.execute(count_stmt)
+            total = total_result.scalar_one()
+
+            rel_result = await db.execute(stmt)
             relationships = rel_result.scalars().all()
 
-            return [BusinessRelationshipResponse.model_validate(rel) for rel in relationships]
+            items = [BusinessRelationshipResponse.model_validate(rel) for rel in relationships]
+
+            return PaginatedResponse[BusinessRelationshipResponse].create(
+                items=items,
+                total=total,
+                page=page,
+                size=size,
+                url_base=f"{url_base}/{business_id}/relationships",
+            )
 
         except NotFoundError:
             raise
@@ -261,10 +316,10 @@ class BusinessController(_StubController):
         db = db or self.db
 
         try:
-
             rel_create = BusinessRelationshipCreate(**payload)
 
             stmt = select(Business).where(Business.id == business_id)
+
             result = await db.execute(stmt)
             source_business = result.scalar_one_or_none()
 
@@ -272,12 +327,15 @@ class BusinessController(_StubController):
                 raise NotFoundError(message=f"Business with ID {business_id} not found")
 
             stmt = select(Business).where(Business.id == rel_create.related_business_id)
+
             result = await db.execute(stmt)
             related_business = result.scalar_one_or_none()
 
             if not related_business:
                 raise NotFoundError(
-                    message=f"Related business with ID {rel_create.related_business_id} not found"
+                    message=(
+                        "Related business with ID " f"{rel_create.related_business_id} not found"
+                    )
                 )
 
             if business_id == rel_create.related_business_id:
@@ -291,6 +349,7 @@ class BusinessController(_StubController):
             )
 
             db.add(new_relationship)
+
             await db.flush()
             await db.refresh(new_relationship)
 
@@ -308,7 +367,7 @@ class BusinessController(_StubController):
             await db.rollback()
 
             raise ConflictError(
-                message="The ownership relationship conflicts " "with existing data"
+                message="The ownership relationship conflicts with existing data"
             ) from exc
 
         except SQLAlchemyError as exc:

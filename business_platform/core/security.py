@@ -12,7 +12,6 @@ from business_platform.utils.enums import TokenType
 _pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
-# ── Passwords ────────────────────────────────────────────────────────────────
 def hash_password(plain_password: str) -> str:
     """Return a bcrypt hash of the given plaintext password."""
     return _pwd_context.hash(plain_password)
@@ -23,7 +22,6 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     return _pwd_context.verify(plain_password, hashed_password)
 
 
-# ── JWTs ─────────────────────────────────────────────────────────────────────
 def _create_token(
     subject: dict[str, Any],
     token_type: TokenType,
@@ -43,7 +41,7 @@ def create_access_token(subject: dict[str, Any]) -> str:
     """Short-lived access token carrying the identity claims."""
     return _create_token(
         subject,
-        TokenType.ACCESS,
+        TokenType.BEARER,
         timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES),
     )
 
@@ -52,7 +50,7 @@ def create_refresh_token(subject: dict[str, Any]) -> str:
     """Long-lived refresh token used only to mint new access tokens."""
     return _create_token(
         subject,
-        TokenType.REFRESH,
+        TokenType.BEARER,
         timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS),
     )
 

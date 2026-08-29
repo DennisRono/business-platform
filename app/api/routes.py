@@ -11,7 +11,7 @@ from app.api.endpoints.auth import auth_router
 
 api_router = APIRouter()
 
-api_router.include_router(auth_router, prefix="/dashboard", tags=["Auth"])
+api_router.include_router(auth_router, prefix="/auth", tags=["Auth"])
 api_router.include_router(dashboard_router, prefix="/dashboard", tags=["Dashboard"])
 api_router.include_router(businesses_router, prefix="/business")
 api_router.include_router(people_router, prefix="/people", tags=["People"])

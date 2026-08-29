@@ -13,7 +13,7 @@ from business_platform.core.security import JWTError, decode_token
 from business_platform.utils.enums import Role, TokenType
 
 oauth2_scheme = OAuth2PasswordBearer(
-    tokenUrl=f"{settings.API_V1_PREFIX}/login",
+    tokenUrl=f"{settings.API_V1_PREFIX}/auth/login",
     auto_error=False,
 )
 
@@ -44,7 +44,7 @@ async def get_current_user(
     except JWTError as exc:
         raise AuthenticationError("Invalid or expired token.") from exc
 
-    if payload.get("type") != TokenType.ACCESS.value:
+    if payload.get("type") != TokenType.BEARER.value:
         raise AuthenticationError("A refresh token cannot be used to authenticate.")
 
     sub = payload.get("sub")
