@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from business_platform.controllers import FinancialController
 from business_platform.db.database import get_db
 from business_platform.dependencies.authorization import BusinessAccessUser
+from business_platform.schemas.financial import FinancialTransactionCreate, FinancialAccountCreate
 
 businesses_financials_router = APIRouter()
 
@@ -30,12 +31,12 @@ async def list_transactions(
     summary="Create a financial transaction",
 )
 async def create_transaction(
-    payload: dict[str, Any],
+    payload: FinancialTransactionCreate,
     db: DbSession,
     _: BusinessAccessUser,
     business_id: uuid.UUID,
 ) -> Any:
-    return await FinancialController(db).create_transaction(business_id, payload)
+    return await FinancialController(db).create_transaction(business_id, payload.model_dump(exclude_none=True))
 
 
 @businesses_financials_router.get("/{business_id}/financials/accounts", summary="List financial accounts")

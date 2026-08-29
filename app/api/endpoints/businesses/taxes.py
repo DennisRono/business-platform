@@ -12,6 +12,7 @@ from business_platform.dependencies.authorization import (
     BusinessAccessUser,
     SensitiveDataUser,
 )
+from business_platform.schemas.tax import TaxProfileCreate, TaxIdentifierCreate
 
 businesses_taxes_router = APIRouter()
 
@@ -33,12 +34,12 @@ async def list_taxes(
     summary="Create a tax profile",
 )
 async def create_tax_profile(
-    payload: dict[str, Any],
+    payload: TaxProfileCreate,
     db: DbSession,
     _: BusinessAccessUser,
     business_id: uuid.UUID,
 ) -> Any:
-    return await TaxController(db).create(business_id, payload)
+    return await TaxController(db).create(business_id, payload.model_dump(exclude_none=True))
 
 
 @businesses_taxes_router.get(

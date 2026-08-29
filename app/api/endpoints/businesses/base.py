@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, Path, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from business_platform.controllers.businesses.index import BusinessController
-from business_platform.schemas.businesses import BusinessCreate
+from business_platform.schemas.business import BusinessCreate, BusinessUpdate
 from business_platform.utils.constants import DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE
 from business_platform.db.database import get_db
 from business_platform.dependencies.auth import GetCurrentUser
@@ -67,12 +67,12 @@ async def get_business(
 
 @base_router.patch("/{business_id}", summary="Update a business")
 async def update_business(
-    payload: dict[str, Any],
+    payload: BusinessUpdate,
     db: DbSession,
     _: BusinessAccessUser,
     business_id: uuid.UUID,
 ) -> Any:
-    return await BusinessController(db).update(business_id, payload)
+    return await BusinessController(db).update(business_id, payload.model_dump(exclude_none=True))
 
 
 @base_router.delete(

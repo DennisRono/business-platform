@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from business_platform.controllers import OwnershipController
 from business_platform.db.database import get_db
 from business_platform.dependencies.authorization import BusinessOwnerOrAdminUser
+from business_platform.schemas.ownership import OwnershipRecordCreate, OwnershipTransitionRequest
 
 businesses_owners_router = APIRouter()
 
@@ -30,12 +31,12 @@ async def list_owners(
 	summary="Create an ownership record",
 )
 async def create_owner(
-	payload: dict[str, Any],
+	payload: OwnershipRecordCreate,
 	db: DbSession,
 	_: BusinessOwnerOrAdminUser,
 	business_id: uuid.UUID,
 ) -> Any:
-	return await OwnershipController(db).create(business_id, payload)
+	return await OwnershipController(db).create(business_id, payload.model_dump(exclude_none=True))
 
 
 @businesses_owners_router.patch(
@@ -43,10 +44,10 @@ async def create_owner(
 	summary="Transition an ownership record",
 )
 async def transition_owner(
-	payload: dict[str, Any],
+	payload: OwnershipTransitionRequest,
 	db: DbSession,
 	_: BusinessOwnerOrAdminUser,
 	business_id: uuid.UUID,
 	ownership_record_id: uuid.UUID,
 ) -> Any:
-	return await OwnershipController(db).transition(business_id, ownership_record_id, payload)
+	return await OwnershipController(db).transition(business_id, ownership_record_id, payload.model_dump(exclude_none=True))

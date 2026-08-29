@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from business_platform.controllers import CompensationController
 from business_platform.db.database import get_db
 from business_platform.dependencies.authorization import HrPayrollOrFinanceUser
+from business_platform.schemas.compensation import CompensationRecordCreate
 
 businesses_compensation_router = APIRouter()
 
@@ -30,12 +31,12 @@ async def list_compensation(
     summary="Create a compensation record",
 )
 async def create_compensation(
-    payload: dict[str, Any],
+    payload: CompensationRecordCreate,
     db: DbSession,
     _: HrPayrollOrFinanceUser,
     business_id: uuid.UUID,
 ) -> Any:
-    return await CompensationController(db).create(business_id, payload)
+    return await CompensationController(db).create(business_id, payload.model_dump(exclude_none=True))
 
 
 @businesses_compensation_router.get(

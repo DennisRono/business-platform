@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from business_platform.controllers import BusinessController
 from business_platform.db.database import get_db
 from business_platform.dependencies.authorization import BusinessAccessUser
+from business_platform.schemas.business_relationship import BusinessRelationshipCreate
 
 businesses_relationships_router = APIRouter()
 
@@ -30,9 +31,9 @@ async def list_relationships(
 	summary="Create a business relationship",
 )
 async def create_relationship(
-	payload: dict[str, Any],
+	payload: BusinessRelationshipCreate,
 	db: DbSession,
 	_: BusinessAccessUser,
 	business_id: uuid.UUID,
 ) -> Any:
-	return await BusinessController(db).create_relationship(business_id, payload)
+	return await BusinessController(db).create_relationship(business_id, payload.model_dump(exclude_none=True))

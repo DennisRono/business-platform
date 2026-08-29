@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from business_platform.controllers import AuditLogController
 from business_platform.db.database import get_db
 from business_platform.dependencies.authorization import AuditLogAccessUser
+from business_platform.schemas.audit_log import AuditLogResponse
 
 audit_logs_router = APIRouter()
 

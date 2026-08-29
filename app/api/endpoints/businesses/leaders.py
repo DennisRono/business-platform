@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from business_platform.controllers import LeadershipController
 from business_platform.db.database import get_db
 from business_platform.dependencies.authorization import BusinessAccessUser
+from business_platform.schemas.leader import LeaderCreate
 
 businesses_leaders_router = APIRouter()
 
@@ -30,9 +31,9 @@ async def list_leaders(
 	summary="Create a leader",
 )
 async def create_leader(
-	payload: dict[str, Any],
+	payload: LeaderCreate,
 	db: DbSession,
 	_: BusinessAccessUser,
 	business_id: uuid.UUID,
 ) -> Any:
-	return await LeadershipController(db).create(business_id, payload)
+	return await LeadershipController(db).create(business_id, payload.model_dump(exclude_none=True))

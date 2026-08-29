@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from business_platform.controllers import EmployeeController
 from business_platform.db.database import get_db
 from business_platform.dependencies.authorization import BusinessAccessUser
+from business_platform.schemas.employee import EmployeeCreate, EmployeeTerminateRequest
 
 businesses_employees_router = APIRouter()
 
@@ -30,12 +31,12 @@ async def list_employees(
 	summary="Create an employee record",
 )
 async def create_employee(
-	payload: dict[str, Any],
+	payload: EmployeeCreate,
 	db: DbSession,
 	_: BusinessAccessUser,
 	business_id: uuid.UUID,
 ) -> Any:
-	return await EmployeeController(db).create(business_id, payload)
+	return await EmployeeController(db).create(business_id, payload.model_dump(exclude_none=True))
 
 
 @businesses_employees_router.get("/{business_id}/employees/{person_id}/history", summary="List employee history")
@@ -54,10 +55,10 @@ async def employee_history(
 	summary="Terminate an employee",
 )
 async def terminate_employee(
-	payload: dict[str, Any],
+	payload: EmployeeTerminateRequest,
 	db: DbSession,
 	_: BusinessAccessUser,
 	business_id: uuid.UUID,
 	person_id: uuid.UUID,
 ) -> None:
-	await EmployeeController(db).terminate(business_id, person_id, payload)
+	await EmployeeController(db).terminate(business_id, person_id, payload.model_dump(exclude_none=True))

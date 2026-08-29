@@ -1,5 +1,8 @@
 from enum import Enum
 
+class TokenType(str, Enum):
+    BEARER = "bearer"
+    MAC = "mac"
 
 class Role(str, Enum):
     """Coarse role assigned to a platform user, carried inside the JWT."""

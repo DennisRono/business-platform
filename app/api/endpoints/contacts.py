@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from business_platform.controllers import ContactController
 from business_platform.db.database import get_db
 from business_platform.dependencies.auth import GetCurrentUser
+from business_platform.schemas.contact import ContactCreate, ContactUpdate
 
 contacts_router = APIRouter()
 
@@ -26,8 +27,8 @@ async def list_contacts(
 
 
 @contacts_router .post("/", status_code=status.HTTP_201_CREATED, summary="Create a contact")
-async def create_contact(payload: dict[str, Any], db: DbSession, _: GetCurrentUser) -> Any:
-    return await ContactController(db).create(payload)
+async def create_contact(payload: ContactCreate, db: DbSession, _: GetCurrentUser) -> Any:
+    return await ContactController(db).create(payload.model_dump(exclude_none=True))
 
 
 @contacts_router .get("/{contact_id}", summary="Get a contact by id")

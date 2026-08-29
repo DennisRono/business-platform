@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from business_platform.controllers import MembershipController
 from business_platform.db.database import get_db
 from business_platform.dependencies.authorization import BusinessOwnerOrAdminUser
+from business_platform.schemas.membership import MembershipCreate, MembershipUpdate
 
 businesses_memberships_router = APIRouter()
 
@@ -30,20 +31,20 @@ async def list_memberships(
 	summary="Create a membership",
 )
 async def create_membership(
-	payload: dict[str, Any],
+	payload: MembershipCreate,
 	db: DbSession,
 	_: BusinessOwnerOrAdminUser,
 	business_id: uuid.UUID,
 ) -> Any:
-	return await MembershipController(db).create(business_id, payload)
+	return await MembershipController(db).create(business_id, payload.model_dump(exclude_none=True))
 
 
 @businesses_memberships_router.patch("/{business_id}/memberships/{membership_id}", summary="Update a membership")
 async def update_membership(
-	payload: dict[str, Any],
+	payload: MembershipUpdate,
 	db: DbSession,
 	_: BusinessOwnerOrAdminUser,
 	business_id: uuid.UUID,
 	membership_id: uuid.UUID,
 ) -> Any:
-	return await MembershipController(db).update(business_id, membership_id, payload)
+	return await MembershipController(db).update(business_id, membership_id, payload.model_dump(exclude_none=True))
