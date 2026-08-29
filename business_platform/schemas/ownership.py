@@ -1,9 +1,3 @@
-"""
-OwnershipRecord Schemas
-Pydantic v2 schemas for request/response validation of a Person's
-ownership stake in a Business, plus the transition audit trail
-written by PATCH .../owners/{ownership_record_id}.
-"""
 import uuid
 from datetime import date, datetime
 from decimal import Decimal

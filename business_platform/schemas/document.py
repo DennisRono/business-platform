@@ -1,8 +1,3 @@
-"""
-Document / DocumentVersion Schemas
-Pydantic v2 schemas for request/response validation of business
-documents and their immutable uploaded versions.
-"""
 import uuid
 from datetime import date, datetime
 from typing import List, Optional

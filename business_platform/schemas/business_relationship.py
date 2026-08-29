@@ -1,8 +1,3 @@
-"""
-BusinessRelationship Schemas
-Pydantic v2 schemas for request/response validation of the directed
-edge between two businesses.
-"""
 import uuid
 from datetime import date
 from decimal import Decimal

@@ -1,8 +1,3 @@
-"""
-Contact Schemas
-Pydantic v2 schemas for request/response validation of CRM-style
-contacts, which may optionally reference a Business and/or a Person.
-"""
 import uuid
 from typing import Optional
 

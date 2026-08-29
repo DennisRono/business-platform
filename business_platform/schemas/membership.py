@@ -1,8 +1,3 @@
-"""
-Membership Schemas
-Pydantic v2 schemas for request/response validation of a platform
-User's access to a Business dashboard.
-"""
 import uuid
 from datetime import datetime
 from typing import Optional

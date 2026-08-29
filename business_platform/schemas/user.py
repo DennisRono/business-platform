@@ -1,10 +1,3 @@
-"""
-User & Auth Schemas
-Pydantic v2 schemas for the Auth domain. UserCreate/UserResponse/Token
-mirror the shapes already published in the OpenAPI spec field-for-field
-so the contract does not shift; UserUpdate is added for the admin PATCH
-flow the current spec doesn't yet expose.
-"""
 import uuid
 from datetime import datetime
 from typing import Optional

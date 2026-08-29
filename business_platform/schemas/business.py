@@ -1,9 +1,3 @@
-"""
-Business Schemas
-Pydantic v2 schemas for request/response validation in the Business
-domain. BusinessCreate mirrors the OpenAPI BusinessCreate component
-exactly since the spec is already the contract for POST /business/.
-"""
 from datetime import date
 from decimal import Decimal
 from typing import Optional

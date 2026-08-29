@@ -1,8 +1,3 @@
-"""
-Employee Schemas
-Pydantic v2 schemas for request/response validation of employment
-records and the append-only employment history log.
-"""
 import uuid
 from datetime import date
 from typing import Optional

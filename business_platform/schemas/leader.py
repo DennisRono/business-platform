@@ -1,8 +1,3 @@
-"""
-Leader Schemas
-Pydantic v2 schemas for request/response validation of an officer or
-director position held by a Person at a Business.
-"""
 import uuid
 from datetime import date
 from typing import Optional

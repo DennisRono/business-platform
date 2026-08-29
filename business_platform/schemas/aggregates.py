@@ -1,13 +1,3 @@
-"""
-Aggregate Response Schemas
-Response shapes for GET endpoints that are computed from more than one
-table and therefore have no single backing ORM model:
-  - GET /dashboard/overview
-  - GET /dashboard/upcoming
-  - GET /business/{id}/compensation/summary
-  - GET /business/{id}/financials/summary
-  - GET /people/{id}/business-relationships
-"""
 import uuid
 from datetime import date, datetime
 from decimal import Decimal

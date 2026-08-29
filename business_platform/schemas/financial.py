@@ -1,9 +1,3 @@
-"""
-FinancialAccount / FinancialTransaction Schemas
-Pydantic v2 schemas for request/response validation of business bank
-accounts and posted transactions. See schemas/aggregates.py for the
-summary response shape.
-"""
 import uuid
 from datetime import date
 from decimal import Decimal

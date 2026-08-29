@@ -1,8 +1,3 @@
-"""
-Task Schemas
-Pydantic v2 schemas for request/response validation of actionable
-to-do items tied to a Business.
-"""
 import uuid
 from datetime import datetime
 from typing import Optional

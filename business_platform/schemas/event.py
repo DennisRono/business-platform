@@ -1,8 +1,3 @@
-"""
-Event Schemas
-Pydantic v2 schemas for request/response validation of dated
-business events (filing deadlines, board meetings, renewals).
-"""
 import uuid
 from datetime import datetime
 from typing import Optional

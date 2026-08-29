@@ -200,8 +200,7 @@ class CompensationController(_StubController):
                 total=total,
                 page=page,
                 size=size,
-                url_base=url_base
-                or f"/businesses/{business_id}/compensation/{person_id}/history",
+                url_base=url_base or f"/businesses/{business_id}/compensation/{person_id}/history",
             )
 
         except NotFoundError:

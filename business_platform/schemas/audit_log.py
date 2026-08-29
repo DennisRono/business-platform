@@ -1,9 +1,3 @@
-"""
-AuditLog Schemas
-Pydantic v2 read-only schema for the append-only audit trail. There is
-no Create/Update schema — audit rows are written internally by
-services/audit.py, never accepted directly from a client.
-"""
 import uuid
 from datetime import datetime
 from typing import Any, Dict, Optional

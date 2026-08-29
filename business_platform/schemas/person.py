@@ -1,9 +1,3 @@
-"""
-Person Schemas
-Pydantic v2 schemas for request/response validation of a natural
-person referenced by ownership, leadership, employment, and contact
-records across one or more businesses.
-"""
 import uuid
 from datetime import date
 from typing import Optional

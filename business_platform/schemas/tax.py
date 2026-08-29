@@ -1,13 +1,3 @@
-"""
-TaxProfile / TaxIdentifier Schemas
-Pydantic v2 schemas for request/response validation of tax profiles
-and the sensitive identifiers attached to them.
-
-TaxIdentifierResponse deliberately exposes only `identifier_last4`,
-never the encrypted value — decrypting for display is out of scope
-for a list/read schema and should go through a dedicated,
-permission-gated reveal endpoint if ever needed.
-"""
 import uuid
 from datetime import date, datetime
 from typing import Optional
