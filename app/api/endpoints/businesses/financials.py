@@ -16,7 +16,7 @@ from business_platform.schemas.financial import (
     FinancialTransactionCreate,
     FinancialTransactionResponse,
 )
-from business_platform.utils.constants import DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE
+from business_platform.utils.constants import AUTH_RESPONSES, DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE
 
 businesses_financials_router = APIRouter()
 
@@ -26,6 +26,7 @@ DbSession: TypeAlias = Annotated[AsyncSession, Depends(get_db)]
 @businesses_financials_router.get(
     "/{business_id}/financials/transactions",
     summary="List financial transactions",
+    responses=AUTH_RESPONSES,
     response_model=PaginatedResponse[FinancialTransactionResponse],
 )
 async def list_transactions(
@@ -47,6 +48,7 @@ async def list_transactions(
     "/{business_id}/financials/transactions",
     status_code=status.HTTP_201_CREATED,
     summary="Create a financial transaction",
+    responses=AUTH_RESPONSES,
     response_model=FinancialTransactionResponse,
 )
 async def create_transaction(
@@ -55,12 +57,15 @@ async def create_transaction(
     _: BusinessAccessUser,
     business_id: uuid.UUID,
 ) -> FinancialTransactionResponse:
-    return await FinancialController(db).create_transaction(business_id, payload.model_dump(exclude_none=True))
+    return await FinancialController(db).create_transaction(
+        business_id, payload.model_dump(exclude_none=True)
+    )
 
 
 @businesses_financials_router.get(
     "/{business_id}/financials/accounts",
     summary="List financial accounts",
+    responses=AUTH_RESPONSES,
     response_model=PaginatedResponse[FinancialAccountResponse],
 )
 async def list_accounts(
@@ -81,6 +86,7 @@ async def list_accounts(
 @businesses_financials_router.get(
     "/{business_id}/financials/summary",
     summary="Summarize financials",
+    responses=AUTH_RESPONSES,
     response_model=FinancialSummaryResponse,
 )
 async def financial_summary(

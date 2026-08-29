@@ -19,7 +19,7 @@ from business_platform.schemas.tax import (
     TaxProfileCreate,
     TaxProfileResponse,
 )
-from business_platform.utils.constants import DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE
+from business_platform.utils.constants import AUTH_RESPONSES, DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE
 
 businesses_taxes_router = APIRouter()
 
@@ -29,6 +29,7 @@ DbSession: TypeAlias = Annotated[AsyncSession, Depends(get_db)]
 @businesses_taxes_router.get(
     "/{business_id}/taxes",
     summary="List tax profiles",
+    responses=AUTH_RESPONSES,
     response_model=PaginatedResponse[TaxProfileResponse],
 )
 async def list_taxes(
@@ -50,6 +51,7 @@ async def list_taxes(
     "/{business_id}/taxes",
     status_code=status.HTTP_201_CREATED,
     summary="Create a tax profile",
+    responses=AUTH_RESPONSES,
     response_model=TaxProfileResponse,
 )
 async def create_tax_profile(
@@ -64,6 +66,7 @@ async def create_tax_profile(
 @businesses_taxes_router.get(
     "/{business_id}/taxes/{tax_profile_id}/identifiers",
     summary="List sensitive tax identifiers",
+    responses=AUTH_RESPONSES,
     response_model=PaginatedResponse[TaxIdentifierResponse],
 )
 async def list_tax_identifiers(

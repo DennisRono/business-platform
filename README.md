@@ -560,3 +560,9 @@ Do not commit `.env` files containing real credentials.
 Use `.env.example` for non-secret configuration templates and keep `.env` in `.gitignore`.
 
 For production, use your deployment platform's secret management mechanism rather than storing production credentials in the repository.
+
+# schemathesis testing
+
+```sh
+schemathesis run http://localhost:8000/openapi.json -H "Authorization: Bearer token_here" --rate-limit 95/m --report ndjson
+```

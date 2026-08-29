@@ -11,7 +11,7 @@ from business_platform.db.database import get_db
 from business_platform.dependencies.authorization import CrossBusinessPersonUser
 from business_platform.schemas.aggregates import PersonBusinessRelationshipResponse
 from business_platform.schemas.base import PaginatedResponse
-from business_platform.utils.constants import DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE
+from business_platform.utils.constants import AUTH_RESPONSES, DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE
 
 people_business_relationships_router = APIRouter(tags=["people"])
 
@@ -21,6 +21,7 @@ DbSession: TypeAlias = Annotated[AsyncSession, Depends(get_db)]
 @people_business_relationships_router.get(
     "/{person_id}/business-relationships",
     summary="List person business relationships",
+    responses=AUTH_RESPONSES,
     response_model=PaginatedResponse[PersonBusinessRelationshipResponse],
 )
 async def list_business_relationships(

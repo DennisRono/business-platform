@@ -15,7 +15,7 @@ from business_platform.schemas.document import (
     DocumentResponse,
     DocumentVersionResponse,
 )
-from business_platform.utils.constants import DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE
+from business_platform.utils.constants import AUTH_RESPONSES, DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE
 
 businesses_documents_router = APIRouter()
 
@@ -25,6 +25,7 @@ DbSession: TypeAlias = Annotated[AsyncSession, Depends(get_db)]
 @businesses_documents_router.get(
     "/{business_id}/documents",
     summary="List documents",
+    responses=AUTH_RESPONSES,
     response_model=PaginatedResponse[DocumentResponse],
 )
 async def list_documents(
@@ -46,6 +47,7 @@ async def list_documents(
     "/{business_id}/documents",
     status_code=status.HTTP_201_CREATED,
     summary="Create a document",
+    responses=AUTH_RESPONSES,
     response_model=DocumentResponse,
 )
 async def create_document(
@@ -60,6 +62,7 @@ async def create_document(
 @businesses_documents_router.get(
     "/{business_id}/documents/{document_id}",
     summary="Get a document",
+    responses=AUTH_RESPONSES,
     response_model=DocumentResponse,
 )
 async def get_document(
@@ -74,6 +77,7 @@ async def get_document(
 @businesses_documents_router.get(
     "/{business_id}/documents/{document_id}/versions",
     summary="List document versions",
+    responses=AUTH_RESPONSES,
     response_model=PaginatedResponse[DocumentVersionResponse],
 )
 async def list_document_versions(

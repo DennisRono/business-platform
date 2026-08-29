@@ -10,30 +10,38 @@ from business_platform.controllers import BusinessController
 from business_platform.db.database import get_db
 from business_platform.dependencies.authorization import BusinessAccessUser
 from business_platform.schemas.business_relationship import BusinessRelationshipCreate
+from business_platform.utils.constants import AUTH_RESPONSES
 
 businesses_relationships_router = APIRouter()
 
 DbSession: TypeAlias = Annotated[AsyncSession, Depends(get_db)]
 
 
-@businesses_relationships_router.get("/{business_id}/relationships", summary="List business relationships")
+@businesses_relationships_router.get(
+    "/{business_id}/relationships",
+    summary="List business relationships",
+    responses=AUTH_RESPONSES,
+)
 async def list_relationships(
-	db: DbSession,
-	_: BusinessAccessUser,
-	business_id: uuid.UUID,
+    db: DbSession,
+    _: BusinessAccessUser,
+    business_id: uuid.UUID,
 ) -> Any:
-	return await BusinessController(db).get_relationships(business_id)
+    return await BusinessController(db).get_relationships(business_id)
 
 
 @businesses_relationships_router.post(
-	"/{business_id}/relationships",
-	status_code=status.HTTP_201_CREATED,
-	summary="Create a business relationship",
+    "/{business_id}/relationships",
+    status_code=status.HTTP_201_CREATED,
+    summary="Create a business relationship",
+    responses=AUTH_RESPONSES,
 )
 async def create_relationship(
-	payload: BusinessRelationshipCreate,
-	db: DbSession,
-	_: BusinessAccessUser,
-	business_id: uuid.UUID,
+    payload: BusinessRelationshipCreate,
+    db: DbSession,
+    _: BusinessAccessUser,
+    business_id: uuid.UUID,
 ) -> Any:
-	return await BusinessController(db).create_relationship(business_id, payload.model_dump(exclude_none=True))
+    return await BusinessController(db).create_relationship(
+        business_id, payload.model_dump(exclude_none=True)
+    )

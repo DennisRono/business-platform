@@ -11,16 +11,17 @@ from business_platform.db.database import get_db
 from business_platform.dependencies.authorization import AuditLogAccessUser
 from business_platform.schemas.audit_log import AuditLogResponse
 from business_platform.schemas.base import PaginatedResponse
-from business_platform.utils.constants import DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE
+from business_platform.utils.constants import AUTH_RESPONSES, DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE
 
 audit_logs_router = APIRouter()
 
 DbSession: TypeAlias = Annotated[AsyncSession, Depends(get_db)]
 
 
-@audit_logs_router .get(
+@audit_logs_router.get(
     "/",
     summary="List audit logs",
+    responses=AUTH_RESPONSES,
     response_model=PaginatedResponse[AuditLogResponse],
 )
 async def list_audit_logs(

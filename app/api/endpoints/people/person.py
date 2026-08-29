@@ -10,14 +10,19 @@ from business_platform.controllers import PersonController
 from business_platform.db.database import get_db
 from business_platform.dependencies.authorization import CrossBusinessPersonUser
 from business_platform.schemas.person import PersonResponse, PersonUpdate
-from business_platform.utils.constants import DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE
+from business_platform.utils.constants import AUTH_RESPONSES, DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE
 
 router = APIRouter(tags=["people"])
 
 DbSession: TypeAlias = Annotated[AsyncSession, Depends(get_db)]
 
 
-@router.get("/{person_id}", summary="Get a person by id", response_model=PersonResponse)
+@router.get(
+    "/{person_id}",
+    summary="Get a person by id",
+    responses=AUTH_RESPONSES,
+    response_model=PersonResponse,
+)
 async def get_person(
     db: DbSession,
     _: CrossBusinessPersonUser,
@@ -26,7 +31,12 @@ async def get_person(
     return await PersonController(db).get_by_id(person_id)
 
 
-@router.patch("/{person_id}", summary="Update a person", response_model=PersonResponse)
+@router.patch(
+    "/{person_id}",
+    summary="Update a person",
+    responses=AUTH_RESPONSES,
+    response_model=PersonResponse,
+)
 async def update_person(
     payload: PersonUpdate,
     db: DbSession,

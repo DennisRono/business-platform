@@ -12,7 +12,7 @@ from business_platform.db.database import get_db
 from business_platform.dependencies.authorization import BusinessAccessUser
 from business_platform.schemas.base import PaginatedResponse
 from business_platform.schemas.event import EventCreate, EventResponse, EventUpdate
-from business_platform.utils.constants import DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE
+from business_platform.utils.constants import AUTH_RESPONSES, DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE
 
 businesses_events_router = APIRouter()
 
@@ -22,6 +22,7 @@ DbSession: TypeAlias = Annotated[AsyncSession, Depends(get_db)]
 @businesses_events_router.get(
     "/{business_id}/events",
     summary="List events",
+    responses=AUTH_RESPONSES,
     response_model=PaginatedResponse[EventResponse],
 )
 async def list_events(
@@ -51,6 +52,7 @@ async def list_events(
     "/{business_id}/events",
     status_code=status.HTTP_201_CREATED,
     summary="Create an event",
+    responses=AUTH_RESPONSES,
     response_model=EventResponse,
 )
 async def create_event(
@@ -65,6 +67,7 @@ async def create_event(
 @businesses_events_router.patch(
     "/{business_id}/events/{event_id}",
     summary="Update an event",
+    responses=AUTH_RESPONSES,
     response_model=EventResponse,
 )
 async def update_event(
@@ -74,4 +77,6 @@ async def update_event(
     business_id: uuid.UUID,
     event_id: uuid.UUID,
 ) -> EventResponse:
-    return await EventController(db).update(business_id, event_id, payload.model_dump(exclude_none=True))
+    return await EventController(db).update(
+        business_id, event_id, payload.model_dump(exclude_none=True)
+    )

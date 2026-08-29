@@ -11,16 +11,17 @@ from business_platform.db.database import get_db
 from business_platform.dependencies.auth import GetCurrentUser
 from business_platform.schemas.base import PaginatedResponse
 from business_platform.schemas.contact import ContactCreate, ContactResponse
-from business_platform.utils.constants import DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE
+from business_platform.utils.constants import AUTH_RESPONSES, DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE
 
 contacts_router = APIRouter()
 
 DbSession: TypeAlias = Annotated[AsyncSession, Depends(get_db)]
 
 
-@contacts_router .get(
+@contacts_router.get(
     "/",
     summary="List contacts",
+    responses=AUTH_RESPONSES,
     response_model=PaginatedResponse[ContactResponse],
 )
 async def list_contacts(
@@ -32,19 +33,23 @@ async def list_contacts(
     return await ContactController(db).get_all(page=page, size=size, url_base="/contacts")
 
 
-@contacts_router .post(
+@contacts_router.post(
     "/",
     status_code=status.HTTP_201_CREATED,
     summary="Create a contact",
+    responses=AUTH_RESPONSES,
     response_model=ContactResponse,
 )
-async def create_contact(payload: ContactCreate, db: DbSession, _: GetCurrentUser) -> ContactResponse:
+async def create_contact(
+    payload: ContactCreate, db: DbSession, _: GetCurrentUser
+) -> ContactResponse:
     return await ContactController(db).create(payload.model_dump(exclude_none=True))
 
 
-@contacts_router .get(
+@contacts_router.get(
     "/{contact_id}",
     summary="Get a contact by id",
+    responses=AUTH_RESPONSES,
     response_model=ContactResponse,
 )
 async def get_contact(

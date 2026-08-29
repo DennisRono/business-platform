@@ -18,6 +18,7 @@ from business_platform.schemas.membership import (
     MembershipUpdate,
 )
 from business_platform.utils.constants import (
+    AUTH_RESPONSES,
     DEFAULT_PAGE_SIZE,
     MAX_PAGE_SIZE,
 )
@@ -33,6 +34,7 @@ DbSession: TypeAlias = Annotated[
 @businesses_memberships_router.get(
     "/{business_id}/memberships",
     summary="List business memberships",
+    responses=AUTH_RESPONSES,
     response_model=PaginatedResponse[MembershipResponse],
 )
 async def list_memberships(
@@ -58,6 +60,7 @@ async def list_memberships(
     "/{business_id}/memberships",
     status_code=status.HTTP_201_CREATED,
     summary="Create a membership",
+    responses=AUTH_RESPONSES,
     response_model=MembershipResponse,
 )
 async def create_membership(
@@ -76,6 +79,7 @@ async def create_membership(
 @businesses_memberships_router.patch(
     "/{business_id}/memberships/{membership_id}",
     summary="Update a membership",
+    responses=AUTH_RESPONSES,
     response_model=MembershipResponse,
 )
 async def update_membership(

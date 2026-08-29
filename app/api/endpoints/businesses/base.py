@@ -24,6 +24,7 @@ from business_platform.schemas.business_relationship import (
 )
 
 from business_platform.utils.constants import (
+    AUTH_RESPONSES,
     DEFAULT_PAGE_SIZE,
     MAX_PAGE_SIZE,
 )
@@ -43,6 +44,7 @@ DbSession: TypeAlias = Annotated[
     "/",
     summary="List businesses",
     response_model=PaginatedResponse[BusinessResponse],
+    responses=AUTH_RESPONSES,
 )
 async def list_businesses(
     db: DbSession,
@@ -71,6 +73,7 @@ async def list_businesses(
     status_code=status.HTTP_201_CREATED,
     summary="Create a business",
     response_model=BusinessResponse,
+    responses=AUTH_RESPONSES,
 )
 async def create_business(
     payload: BusinessCreate,
@@ -87,6 +90,7 @@ async def create_business(
     "/{business_id}",
     summary="Get a business by id",
     response_model=BusinessResponse,
+    responses=AUTH_RESPONSES,
 )
 async def get_business(
     db: DbSession,
@@ -100,6 +104,7 @@ async def get_business(
     "/{business_id}",
     summary="Update a business",
     response_model=BusinessResponse,
+    responses=AUTH_RESPONSES,
 )
 async def update_business(
     payload: BusinessUpdate,
@@ -117,6 +122,7 @@ async def update_business(
     "/{business_id}",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Soft-delete a business",
+    responses=AUTH_RESPONSES,
 )
 async def delete_business(
     db: DbSession,
@@ -133,6 +139,7 @@ async def delete_business(
     "/{business_id}/relationships",
     summary="List business relationships",
     response_model=PaginatedResponse[BusinessRelationshipResponse],
+    responses=AUTH_RESPONSES,
 )
 async def get_business_relationships(
     db: DbSession,
@@ -158,6 +165,7 @@ async def get_business_relationships(
     status_code=status.HTTP_201_CREATED,
     summary="Create a business relationship",
     response_model=BusinessRelationshipResponse,
+    responses=AUTH_RESPONSES,
 )
 async def create_business_relationship(
     business_id: uuid.UUID,
