@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import uuid
-from typing import Annotated, Any, TypeAlias
+from typing import Annotated, TypeAlias
 
-from fastapi import APIRouter, Depends, Path, status
+from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from business_platform.controllers import TaxController
@@ -12,45 +12,73 @@ from business_platform.dependencies.authorization import (
     BusinessAccessUser,
     SensitiveDataUser,
 )
-from business_platform.schemas.tax import TaxProfileCreate, TaxIdentifierCreate
+from business_platform.schemas.base import PaginatedResponse
+from business_platform.schemas.tax import (
+    TaxIdentifierCreate,
+    TaxIdentifierResponse,
+    TaxProfileCreate,
+    TaxProfileResponse,
+)
+from business_platform.utils.constants import DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE
 
 businesses_taxes_router = APIRouter()
 
 DbSession: TypeAlias = Annotated[AsyncSession, Depends(get_db)]
 
 
-@businesses_taxes_router.get("/{business_id}/taxes", summary="List tax profiles")
+@businesses_taxes_router.get(
+    "/{business_id}/taxes",
+    summary="List tax profiles",
+    response_model=PaginatedResponse[TaxProfileResponse],
+)
 async def list_taxes(
     db: DbSession,
     _: BusinessAccessUser,
     business_id: uuid.UUID,
-) -> Any:
-    return await TaxController(db).get_all(business_id)
+    page: int = Query(1, ge=1),
+    size: int = Query(DEFAULT_PAGE_SIZE, ge=1, le=MAX_PAGE_SIZE),
+) -> PaginatedResponse[TaxProfileResponse]:
+    return await TaxController(db).get_all(
+        business_id,
+        page=page,
+        size=size,
+        url_base=f"/businesses/{business_id}/taxes",
+    )
 
 
 @businesses_taxes_router.post(
     "/{business_id}/taxes",
     status_code=status.HTTP_201_CREATED,
     summary="Create a tax profile",
+    response_model=TaxProfileResponse,
 )
 async def create_tax_profile(
     payload: TaxProfileCreate,
     db: DbSession,
     _: BusinessAccessUser,
     business_id: uuid.UUID,
-) -> Any:
+) -> TaxProfileResponse:
     return await TaxController(db).create(business_id, payload.model_dump(exclude_none=True))
 
 
 @businesses_taxes_router.get(
     "/{business_id}/taxes/{tax_profile_id}/identifiers",
     summary="List sensitive tax identifiers",
+    response_model=PaginatedResponse[TaxIdentifierResponse],
 )
 async def list_tax_identifiers(
     db: DbSession,
     _: SensitiveDataUser,
     business_id: uuid.UUID,
     tax_profile_id: uuid.UUID,
-) -> Any:
+    page: int = Query(1, ge=1),
+    size: int = Query(DEFAULT_PAGE_SIZE, ge=1, le=MAX_PAGE_SIZE),
+) -> PaginatedResponse[TaxIdentifierResponse]:
     # TODO: make this request auditable through the audit dependency pipeline.
-    return await TaxController(db).get_identifiers(business_id, tax_profile_id)
+    return await TaxController(db).get_identifiers(
+        business_id,
+        tax_profile_id,
+        page=page,
+        size=size,
+        url_base=f"/businesses/{business_id}/taxes/{tax_profile_id}/identifiers",
+    )

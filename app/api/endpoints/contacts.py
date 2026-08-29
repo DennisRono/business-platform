@@ -1,40 +1,55 @@
 from __future__ import annotations
 
 import uuid
-from typing import Annotated, Any, TypeAlias
+from typing import Annotated, TypeAlias
 
-from fastapi import APIRouter, Depends, Path, Query, status
+from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from business_platform.controllers import ContactController
 from business_platform.db.database import get_db
 from business_platform.dependencies.auth import GetCurrentUser
-from business_platform.schemas.contact import ContactCreate, ContactUpdate
+from business_platform.schemas.base import PaginatedResponse
+from business_platform.schemas.contact import ContactCreate, ContactResponse
+from business_platform.utils.constants import DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE
 
 contacts_router = APIRouter()
 
 DbSession: TypeAlias = Annotated[AsyncSession, Depends(get_db)]
 
 
-@contacts_router .get("/", summary="List contacts")
+@contacts_router .get(
+    "/",
+    summary="List contacts",
+    response_model=PaginatedResponse[ContactResponse],
+)
 async def list_contacts(
     db: DbSession,
     _: GetCurrentUser,
-    skip: int = Query(0, ge=0),
-    limit: int = Query(20, ge=1, le=100),
-) -> Any:
-    return await ContactController(db).get_all(skip=skip, limit=limit)
+    page: int = Query(1, ge=1),
+    size: int = Query(DEFAULT_PAGE_SIZE, ge=1, le=MAX_PAGE_SIZE),
+) -> PaginatedResponse[ContactResponse]:
+    return await ContactController(db).get_all(page=page, size=size, url_base="/contacts")
 
 
-@contacts_router .post("/", status_code=status.HTTP_201_CREATED, summary="Create a contact")
-async def create_contact(payload: ContactCreate, db: DbSession, _: GetCurrentUser) -> Any:
+@contacts_router .post(
+    "/",
+    status_code=status.HTTP_201_CREATED,
+    summary="Create a contact",
+    response_model=ContactResponse,
+)
+async def create_contact(payload: ContactCreate, db: DbSession, _: GetCurrentUser) -> ContactResponse:
     return await ContactController(db).create(payload.model_dump(exclude_none=True))
 
 
-@contacts_router .get("/{contact_id}", summary="Get a contact by id")
+@contacts_router .get(
+    "/{contact_id}",
+    summary="Get a contact by id",
+    response_model=ContactResponse,
+)
 async def get_contact(
     db: DbSession,
     _: GetCurrentUser,
     contact_id: uuid.UUID,
-) -> Any:
+) -> ContactResponse:
     return await ContactController(db).get_by_id(contact_id)

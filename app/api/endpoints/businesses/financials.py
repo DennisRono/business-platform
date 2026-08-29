@@ -1,57 +1,91 @@
 from __future__ import annotations
 
 import uuid
-from typing import Annotated, Any, TypeAlias
+from typing import Annotated, TypeAlias
 
-from fastapi import APIRouter, Depends, Path, status
+from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from business_platform.controllers import FinancialController
 from business_platform.db.database import get_db
 from business_platform.dependencies.authorization import BusinessAccessUser
-from business_platform.schemas.financial import FinancialTransactionCreate, FinancialAccountCreate
+from business_platform.schemas.aggregates import FinancialSummaryResponse
+from business_platform.schemas.base import PaginatedResponse
+from business_platform.schemas.financial import (
+    FinancialAccountResponse,
+    FinancialTransactionCreate,
+    FinancialTransactionResponse,
+)
+from business_platform.utils.constants import DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE
 
 businesses_financials_router = APIRouter()
 
 DbSession: TypeAlias = Annotated[AsyncSession, Depends(get_db)]
 
 
-@businesses_financials_router.get("/{business_id}/financials/transactions", summary="List financial transactions")
+@businesses_financials_router.get(
+    "/{business_id}/financials/transactions",
+    summary="List financial transactions",
+    response_model=PaginatedResponse[FinancialTransactionResponse],
+)
 async def list_transactions(
     db: DbSession,
     _: BusinessAccessUser,
     business_id: uuid.UUID,
-) -> Any:
-    return await FinancialController(db).get_transactions(business_id)
+    page: int = Query(1, ge=1),
+    size: int = Query(DEFAULT_PAGE_SIZE, ge=1, le=MAX_PAGE_SIZE),
+) -> PaginatedResponse[FinancialTransactionResponse]:
+    return await FinancialController(db).get_transactions(
+        business_id,
+        page=page,
+        size=size,
+        url_base=f"/businesses/{business_id}/financials/transactions",
+    )
 
 
 @businesses_financials_router.post(
     "/{business_id}/financials/transactions",
     status_code=status.HTTP_201_CREATED,
     summary="Create a financial transaction",
+    response_model=FinancialTransactionResponse,
 )
 async def create_transaction(
     payload: FinancialTransactionCreate,
     db: DbSession,
     _: BusinessAccessUser,
     business_id: uuid.UUID,
-) -> Any:
+) -> FinancialTransactionResponse:
     return await FinancialController(db).create_transaction(business_id, payload.model_dump(exclude_none=True))
 
 
-@businesses_financials_router.get("/{business_id}/financials/accounts", summary="List financial accounts")
+@businesses_financials_router.get(
+    "/{business_id}/financials/accounts",
+    summary="List financial accounts",
+    response_model=PaginatedResponse[FinancialAccountResponse],
+)
 async def list_accounts(
     db: DbSession,
     _: BusinessAccessUser,
     business_id: uuid.UUID,
-) -> Any:
-    return await FinancialController(db).get_accounts(business_id)
+    page: int = Query(1, ge=1),
+    size: int = Query(DEFAULT_PAGE_SIZE, ge=1, le=MAX_PAGE_SIZE),
+) -> PaginatedResponse[FinancialAccountResponse]:
+    return await FinancialController(db).get_accounts(
+        business_id,
+        page=page,
+        size=size,
+        url_base=f"/businesses/{business_id}/financials/accounts",
+    )
 
 
-@businesses_financials_router.get("/{business_id}/financials/summary", summary="Summarize financials")
+@businesses_financials_router.get(
+    "/{business_id}/financials/summary",
+    summary="Summarize financials",
+    response_model=FinancialSummaryResponse,
+)
 async def financial_summary(
     db: DbSession,
     _: BusinessAccessUser,
     business_id: uuid.UUID,
-) -> Any:
+) -> FinancialSummaryResponse:
     return await FinancialController(db).summary(business_id)
