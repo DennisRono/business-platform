@@ -10,7 +10,7 @@ from business_platform.controllers import PersonController
 from business_platform.db.database import get_db
 from business_platform.dependencies.authorization import CrossBusinessPersonUser
 from business_platform.schemas.person import PersonResponse, PersonUpdate
-from business_platform.utils.constants import AUTH_RESPONSES, DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE
+from business_platform.utils.constants import AUTH_RESPONSES
 
 router = APIRouter(tags=["people"])
 

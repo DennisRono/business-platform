@@ -2,10 +2,11 @@ from datetime import date
 from decimal import Decimal
 from typing import Optional
 
-from pydantic import BaseModel, EmailStr, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict
 
 from business_platform.schemas.base import BaseSchema
 from business_platform.utils.enums import BusinessStatus, BusinessType, LegalStructure
+from business_platform.utils.types import LooseEmail
 
 
 class BusinessBase(BaseModel):
@@ -22,7 +23,7 @@ class BusinessBase(BaseModel):
     incorporation_date: Optional[date] = None
     country_of_incorporation: Optional[str] = Field(None, max_length=100)
     state_of_incorporation: Optional[str] = Field(None, max_length=100)
-    email: Optional[EmailStr] = None
+    email: Optional[LooseEmail] = None
     phone: Optional[str] = Field(None, max_length=50)
     website: Optional[str] = Field(None, max_length=2083)
     address_line_1: Optional[str] = Field(None, max_length=255)
@@ -43,7 +44,7 @@ class BusinessBase(BaseModel):
 
 class BusinessCreate(BusinessBase):
     """Schema for creating a new business record. Inherits all base fields."""
-    pass
+    model_config = ConfigDict(extra="forbid")
 
 
 class BusinessUpdate(BaseModel):
@@ -60,7 +61,7 @@ class BusinessUpdate(BaseModel):
     incorporation_date: Optional[date] = None
     country_of_incorporation: Optional[str] = Field(None, max_length=100)
     state_of_incorporation: Optional[str] = Field(None, max_length=100)
-    email: Optional[EmailStr] = None
+    email: Optional[LooseEmail] = None
     phone: Optional[str] = Field(None, max_length=50)
     website: Optional[str] = Field(None, max_length=2083)
     address_line_1: Optional[str] = Field(None, max_length=255)
@@ -77,6 +78,8 @@ class BusinessUpdate(BaseModel):
     is_public: Optional[bool] = None
     stock_symbol: Optional[str] = Field(None, max_length=20)
     stock_exchange: Optional[str] = Field(None, max_length=50)
+
+    model_config = ConfigDict(extra="forbid")
 
 
 class BusinessResponse(BusinessBase, BaseSchema):

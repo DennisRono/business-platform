@@ -16,7 +16,8 @@ from business_platform.schemas.employee import (
     EmployeeResponse,
     EmployeeTerminateRequest,
 )
-from business_platform.utils.constants import AUTH_RESPONSES, DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE
+from business_platform.utils.constants import AUTH_RESPONSES
+from business_platform.utils.pagination import PaginationQuery
 
 businesses_employees_router = APIRouter()
 
@@ -33,13 +34,12 @@ async def list_employees(
     db: DbSession,
     _: BusinessAccessUser,
     business_id: uuid.UUID,
-    page: int = Query(1, ge=1),
-    size: int = Query(DEFAULT_PAGE_SIZE, ge=1, le=MAX_PAGE_SIZE),
+    pagination: PaginationQuery,
 ) -> PaginatedResponse[EmployeeResponse]:
     return await EmployeeController(db).get_all(
         business_id,
-        page=page,
-        size=size,
+        page=pagination.page,
+        size=pagination.size,
         url_base=f"/businesses/{business_id}/employees",
     )
 
@@ -71,14 +71,13 @@ async def employee_history(
     _: BusinessAccessUser,
     business_id: uuid.UUID,
     person_id: uuid.UUID,
-    page: int = Query(1, ge=1),
-    size: int = Query(DEFAULT_PAGE_SIZE, ge=1, le=MAX_PAGE_SIZE),
+    pagination: PaginationQuery,
 ) -> PaginatedResponse[EmployeeHistoryResponse]:
     return await EmployeeController(db).get_history(
         business_id,
         person_id,
-        page=page,
-        size=size,
+        page=pagination.page,
+        size=pagination.size,
         url_base=f"/businesses/{business_id}/employees/{person_id}/history",
     )
 

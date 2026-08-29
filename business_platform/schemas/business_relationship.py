@@ -28,7 +28,7 @@ class BusinessRelationshipBase(BaseModel):
 
 class BusinessRelationshipCreate(BusinessRelationshipBase):
     """Schema for creating a new business relationship. Inherits all base fields."""
-    pass
+    model_config = ConfigDict(extra="forbid")
 
 
 class BusinessRelationshipUpdate(BaseModel):
@@ -39,6 +39,8 @@ class BusinessRelationshipUpdate(BaseModel):
     start_date: Optional[date] = None
     end_date: Optional[date] = None
     notes: Optional[str] = None
+
+    model_config = ConfigDict(extra="forbid")
 
 
 class BusinessRelationshipResponse(BusinessRelationshipBase, BaseSchema):

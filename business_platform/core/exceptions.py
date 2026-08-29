@@ -209,9 +209,21 @@ def register_exception_handlers(app: FastAPI) -> None:
 
     @app.exception_handler(StarletteHTTPException)
     async def _handle_http_exception(_: Request, exc: StarletteHTTPException) -> JSONResponse:
+        # RFC 9110 §9.1 — 405 responses MUST include an Allow header listing
+        # the methods the resource supports.  Starlette encodes these in
+        # exc.headers when it raises MethodNotAllowedError, so we forward them.
+        headers: dict[str, str] | None = None
+        if exc.status_code == status.HTTP_405_METHOD_NOT_ALLOWED:
+            allow_value = (exc.headers or {}).get("Allow") or (exc.headers or {}).get("allow")
+            if allow_value:
+                headers = {"Allow": allow_value}
+            else:
+                # Fallback: surface a generic Allow so the header is never absent.
+                headers = {"Allow": "GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS"}
         return JSONResponse(
             status_code=exc.status_code,
             content=_error_body("HTTPException", str(exc.detail)),
+            headers=headers,
         )
 
     @app.exception_handler(Exception)

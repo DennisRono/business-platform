@@ -1,10 +1,11 @@
 import uuid
 from typing import Optional
 
-from pydantic import BaseModel, EmailStr, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict
 
 from business_platform.schemas.base import BaseSchema
 from business_platform.utils.enums import ContactType
+from business_platform.utils.types import LooseEmail
 
 
 class ContactBase(BaseModel):
@@ -16,7 +17,7 @@ class ContactBase(BaseModel):
     last_name: Optional[str] = Field(None, max_length=150)
     company_name: Optional[str] = Field(None, max_length=255)
     job_title: Optional[str] = Field(None, max_length=150)
-    email: Optional[EmailStr] = None
+    email: Optional[LooseEmail] = None
     phone: Optional[str] = Field(None, max_length=50)
     is_primary: bool = Field(default=False)
     notes: Optional[str] = None
@@ -24,7 +25,7 @@ class ContactBase(BaseModel):
 
 class ContactCreate(ContactBase):
     """Schema for creating a new contact. Inherits all base fields."""
-    pass
+    model_config = ConfigDict(extra="forbid")
 
 
 class ContactUpdate(BaseModel):
@@ -34,10 +35,12 @@ class ContactUpdate(BaseModel):
     last_name: Optional[str] = Field(None, max_length=150)
     company_name: Optional[str] = Field(None, max_length=255)
     job_title: Optional[str] = Field(None, max_length=150)
-    email: Optional[EmailStr] = None
+    email: Optional[LooseEmail] = None
     phone: Optional[str] = Field(None, max_length=50)
     is_primary: Optional[bool] = None
     notes: Optional[str] = None
+
+    model_config = ConfigDict(extra="forbid")
 
 
 class ContactResponse(ContactBase, BaseSchema):

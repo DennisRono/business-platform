@@ -21,6 +21,8 @@ class DocumentCreate(DocumentBase):
     """Schema for creating a new document record. Inherits all base fields."""
     status: DocumentStatus = Field(default=DocumentStatus.DRAFT)
 
+    model_config = ConfigDict(extra="forbid")
+
 
 class DocumentUpdate(BaseModel):
     """Schema for partially updating a document record. All fields are optional."""
@@ -29,6 +31,8 @@ class DocumentUpdate(BaseModel):
     status: Optional[DocumentStatus] = None
     tags: Optional[List[str]] = None
     expiry_date: Optional[date] = None
+
+    model_config = ConfigDict(extra="forbid")
 
 
 class DocumentResponse(DocumentBase, BaseSchema):
@@ -53,6 +57,8 @@ class DocumentVersionCreate(BaseModel):
     file_size_bytes: Optional[int] = Field(None, ge=0)
     checksum: Optional[str] = Field(None, max_length=128)
     change_notes: Optional[str] = None
+
+    model_config = ConfigDict(extra="forbid")
 
 
 class DocumentVersionResponse(BaseModel):

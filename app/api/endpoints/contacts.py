@@ -11,7 +11,8 @@ from business_platform.db.database import get_db
 from business_platform.dependencies.auth import GetCurrentUser
 from business_platform.schemas.base import PaginatedResponse
 from business_platform.schemas.contact import ContactCreate, ContactResponse
-from business_platform.utils.constants import AUTH_RESPONSES, DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE
+from business_platform.utils.constants import AUTH_RESPONSES
+from business_platform.utils.pagination import PaginationQuery
 
 contacts_router = APIRouter()
 
@@ -27,10 +28,11 @@ DbSession: TypeAlias = Annotated[AsyncSession, Depends(get_db)]
 async def list_contacts(
     db: DbSession,
     _: GetCurrentUser,
-    page: int = Query(1, ge=1),
-    size: int = Query(DEFAULT_PAGE_SIZE, ge=1, le=MAX_PAGE_SIZE),
+    pagination: PaginationQuery,
 ) -> PaginatedResponse[ContactResponse]:
-    return await ContactController(db).get_all(page=page, size=size, url_base="/contacts")
+    return await ContactController(db).get_all(
+        page=pagination.page, size=pagination.size, url_base="/contacts"
+    )
 
 
 @contacts_router.post(

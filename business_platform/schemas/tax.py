@@ -20,6 +20,8 @@ class TaxProfileCreate(TaxProfileBase):
     """Schema for creating a new tax profile. Inherits all base fields."""
     status: TaxProfileStatus = Field(default=TaxProfileStatus.ACTIVE)
 
+    model_config = ConfigDict(extra="forbid")
+
 
 class TaxProfileUpdate(BaseModel):
     """Schema for partially updating a tax profile. All fields are optional."""
@@ -27,6 +29,8 @@ class TaxProfileUpdate(BaseModel):
     fiscal_year_end: Optional[str] = Field(None, max_length=5)
     status: Optional[TaxProfileStatus] = None
     notes: Optional[str] = None
+
+    model_config = ConfigDict(extra="forbid")
 
 
 class TaxProfileResponse(TaxProfileBase, BaseSchema):
@@ -54,6 +58,8 @@ class TaxIdentifierCreate(BaseModel):
     issued_country: Optional[str] = Field(None, max_length=100)
     issued_date: Optional[date] = None
     expiry_date: Optional[date] = None
+
+    model_config = ConfigDict(extra="forbid")
 
 
 class TaxIdentifierResponse(BaseModel):

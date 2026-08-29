@@ -15,7 +15,8 @@ from business_platform.schemas.compensation import (
     CompensationRecordCreate,
     CompensationRecordResponse,
 )
-from business_platform.utils.constants import AUTH_RESPONSES, DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE
+from business_platform.utils.constants import AUTH_RESPONSES
+from business_platform.utils.pagination import PaginationQuery
 
 businesses_compensation_router = APIRouter()
 
@@ -32,13 +33,12 @@ async def list_compensation(
     db: DbSession,
     _: HrPayrollOrFinanceUser,
     business_id: uuid.UUID,
-    page: int = Query(1, ge=1),
-    size: int = Query(DEFAULT_PAGE_SIZE, ge=1, le=MAX_PAGE_SIZE),
+    pagination: PaginationQuery,
 ) -> PaginatedResponse[CompensationRecordResponse]:
     return await CompensationController(db).get_all(
         business_id,
-        page=page,
-        size=size,
+        page=pagination.page,
+        size=pagination.size,
         url_base=f"/businesses/{business_id}/compensation",
     )
 
@@ -72,14 +72,13 @@ async def compensation_history(
     _: HrPayrollOrFinanceUser,
     business_id: uuid.UUID,
     person_id: uuid.UUID,
-    page: int = Query(1, ge=1),
-    size: int = Query(DEFAULT_PAGE_SIZE, ge=1, le=MAX_PAGE_SIZE),
+    pagination: PaginationQuery,
 ) -> PaginatedResponse[CompensationRecordResponse]:
     return await CompensationController(db).get_history(
         business_id,
         person_id,
-        page=page,
-        size=size,
+        page=pagination.page,
+        size=pagination.size,
         url_base=f"/businesses/{business_id}/compensation/{person_id}/history",
     )
 

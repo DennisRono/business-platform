@@ -4,11 +4,11 @@ from datetime import datetime
 from uuid import UUID
 
 from sqlalchemy import func, select
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import DataError, OperationalError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from business_platform.controllers.base import _StubController
-from business_platform.core.exceptions import DatabaseError
+from business_platform.core.exceptions import BadRequestError, DatabaseError
 from business_platform.models.audit_log import AuditLog
 from business_platform.schemas.audit_log import AuditLogResponse
 from business_platform.schemas.base import PaginatedResponse
@@ -74,5 +74,9 @@ class AuditLogController(_StubController):
                 url_base=url_base or "/audit-logs",
             )
 
+        except (DataError, OperationalError) as exc:
+            raise BadRequestError(
+                message="Invalid query parameters caused a database error."
+            ) from exc
         except SQLAlchemyError as exc:
             raise DatabaseError(message="Failed to fetch audit logs") from exc

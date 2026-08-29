@@ -3,11 +3,11 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 
 from sqlalchemy import func, select
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import DataError, OperationalError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from business_platform.controllers.base import _StubController
-from business_platform.core.exceptions import DatabaseError
+from business_platform.core.exceptions import BadRequestError, DatabaseError
 from business_platform.models.business import Business
 from business_platform.models.employee import Employee
 from business_platform.models.event import Event
@@ -86,6 +86,10 @@ class DashboardController(_StubController):
                 pending_ownership_transitions=pending_ownership_transitions,
             )
 
+        except (DataError, OperationalError) as exc:
+            raise BadRequestError(
+                message="Invalid query parameters caused a database error."
+            ) from exc
         except SQLAlchemyError as exc:
             raise DatabaseError(message="Failed to fetch dashboard overview") from exc
 
@@ -155,5 +159,9 @@ class DashboardController(_StubController):
                 url_base=url_base or "/dashboard/upcoming",
             )
 
+        except (DataError, OperationalError) as exc:
+            raise BadRequestError(
+                message="Invalid query parameters caused a database error."
+            ) from exc
         except SQLAlchemyError as exc:
             raise DatabaseError(message="Failed to fetch upcoming items") from exc

@@ -32,6 +32,8 @@ class EventCreate(EventBase):
     """Schema for creating a new event. Inherits all base fields."""
     status: EventStatus = Field(default=EventStatus.SCHEDULED)
 
+    model_config = ConfigDict(extra="forbid")
+
 
 class EventUpdate(BaseModel):
     """Schema for partially updating an event. All fields are optional."""
@@ -42,6 +44,8 @@ class EventUpdate(BaseModel):
     end_date: Optional[datetime] = None
     location: Optional[str] = Field(None, max_length=255)
     reminder_days_before: Optional[int] = Field(None, ge=0)
+
+    model_config = ConfigDict(extra="forbid")
 
 
 class EventResponse(EventBase, BaseSchema):

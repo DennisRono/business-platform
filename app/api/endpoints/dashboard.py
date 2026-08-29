@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Annotated, TypeAlias
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from business_platform.controllers import DashboardController
@@ -13,7 +13,8 @@ from business_platform.schemas.aggregates import (
     UpcomingItemResponse,
 )
 from business_platform.schemas.base import PaginatedResponse
-from business_platform.utils.constants import AUTH_RESPONSES, DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE
+from business_platform.utils.constants import AUTH_RESPONSES
+from business_platform.utils.pagination import PaginationQuery
 
 dashboard_router = APIRouter()
 
@@ -39,9 +40,8 @@ async def overview(db: DbSession, _: GetCurrentUser) -> DashboardOverviewRespons
 async def upcoming(
     db: DbSession,
     _: GetCurrentUser,
-    page: int = Query(1, ge=1),
-    size: int = Query(DEFAULT_PAGE_SIZE, ge=1, le=MAX_PAGE_SIZE),
+    pagination: PaginationQuery,
 ) -> PaginatedResponse[UpcomingItemResponse]:
     return await DashboardController(db).upcoming(
-        page=page, size=size, url_base="/dashboard/upcoming"
+        page=pagination.page, size=pagination.size, url_base="/dashboard/upcoming"
     )

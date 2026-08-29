@@ -22,6 +22,8 @@ class LeaderCreate(LeaderBase):
     """Schema for creating a new leader record. Inherits all base fields."""
     status: LeaderStatus = Field(default=LeaderStatus.ACTIVE)
 
+    model_config = ConfigDict(extra="forbid")
+
 
 class LeaderUpdate(BaseModel):
     """Schema for partially updating a leader record. All fields are optional."""
@@ -31,6 +33,8 @@ class LeaderUpdate(BaseModel):
     is_signatory: Optional[bool] = None
     voting_rights: Optional[bool] = None
     notes: Optional[str] = None
+
+    model_config = ConfigDict(extra="forbid")
 
 
 class LeaderResponse(LeaderBase, BaseSchema):

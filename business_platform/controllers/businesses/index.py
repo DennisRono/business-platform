@@ -4,13 +4,14 @@ from typing import Any, Optional
 from uuid import UUID
 
 from sqlalchemy import func, or_, select
-from sqlalchemy.exc import IntegrityError as SQLAlchemyIntegrityError
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import DataError, IntegrityError as SQLAlchemyIntegrityError
+from sqlalchemy.exc import OperationalError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from business_platform.controllers.base import _StubController
 from business_platform.core.exceptions import (
     AuthorizationError,
+    BadRequestError,
     BusinessLogicError,
     ConflictError,
     DatabaseError,
@@ -29,6 +30,7 @@ from business_platform.schemas.business_relationship import (
     BusinessRelationshipResponse,
 )
 from business_platform.utils.enums import BusinessStatus
+from business_platform.utils.validators import BUSINESS_SORT_FIELDS, validate_sort_field
 
 
 class BusinessController(_StubController):
@@ -47,6 +49,9 @@ class BusinessController(_StubController):
         try:
             if current_user.role not in {"admin", "manager"}:
                 raise AuthorizationError(message="Not authorized to list businesses")
+
+            # Validate sort field against whitelist before it touches the DB.
+            sort = validate_sort_field(sort, BUSINESS_SORT_FIELDS)
 
             offset = (page - 1) * size
 
@@ -71,9 +76,9 @@ class BusinessController(_StubController):
                     column_name = sort
                     reverse = False
 
-                if hasattr(Business, column_name):
-                    order_column = getattr(Business, column_name)
-                    stmt = stmt.order_by(order_column.desc() if reverse else order_column)
+                # column_name is guaranteed safe — validate_sort_field already checked it
+                order_column = getattr(Business, column_name)
+                stmt = stmt.order_by(order_column.desc() if reverse else order_column)
 
             total_result = await db.execute(count_stmt)
             total = total_result.scalar_one()
@@ -93,8 +98,12 @@ class BusinessController(_StubController):
                 url_base=url_base,
             )
 
-        except AuthorizationError:
+        except (AuthorizationError, BadRequestError):
             raise
+        except (DataError, OperationalError) as exc:
+            raise BadRequestError(
+                message="Invalid query parameters caused a database error."
+            ) from exc
         except SQLAlchemyError as exc:
             raise DatabaseError(message="Failed to fetch businesses") from exc
 
@@ -132,6 +141,12 @@ class BusinessController(_StubController):
                 )
             ) from exc
 
+        except (DataError, OperationalError) as exc:
+            await db.rollback()
+            raise BadRequestError(
+                message="The request contains invalid data that could not be processed."
+            ) from exc
+
         except SQLAlchemyError as exc:
             await db.rollback()
 
@@ -157,6 +172,11 @@ class BusinessController(_StubController):
 
         except NotFoundError:
             raise
+
+        except (DataError, OperationalError) as exc:
+            raise BadRequestError(
+                message="The request contains invalid data that could not be processed."
+            ) from exc
 
         except SQLAlchemyError as exc:
             raise DatabaseError(message="Failed to fetch business") from exc
@@ -208,6 +228,12 @@ class BusinessController(_StubController):
                 )
             ) from exc
 
+        except (DataError, OperationalError) as exc:
+            await db.rollback()
+            raise BadRequestError(
+                message="The request contains invalid data that could not be processed."
+            ) from exc
+
         except SQLAlchemyError as exc:
             await db.rollback()
 
@@ -245,6 +271,12 @@ class BusinessController(_StubController):
             await db.rollback()
 
             raise ConflictError(message="Business could not be deleted") from exc
+
+        except (DataError, OperationalError) as exc:
+            await db.rollback()
+            raise BadRequestError(
+                message="The request contains invalid data that could not be processed."
+            ) from exc
 
         except SQLAlchemyError as exc:
             await db.rollback()
@@ -303,6 +335,11 @@ class BusinessController(_StubController):
 
         except NotFoundError:
             raise
+
+        except (DataError, OperationalError) as exc:
+            raise BadRequestError(
+                message="Invalid query parameters caused a database error."
+            ) from exc
 
         except SQLAlchemyError as exc:
             raise DatabaseError(message="Failed to fetch business relationships") from exc
@@ -368,6 +405,12 @@ class BusinessController(_StubController):
 
             raise ConflictError(
                 message="The ownership relationship conflicts with existing data"
+            ) from exc
+
+        except (DataError, OperationalError) as exc:
+            await db.rollback()
+            raise BadRequestError(
+                message="The request contains invalid data that could not be processed."
             ) from exc
 
         except SQLAlchemyError as exc:

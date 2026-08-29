@@ -3,7 +3,7 @@ from __future__ import annotations
 import uuid
 from typing import Annotated, TypeAlias
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from business_platform.controllers import OwnershipController
@@ -15,7 +15,8 @@ from business_platform.schemas.ownership import (
     OwnershipRecordResponse,
     OwnershipTransitionRequest,
 )
-from business_platform.utils.constants import AUTH_RESPONSES, DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE
+from business_platform.utils.constants import AUTH_RESPONSES
+from business_platform.utils.pagination import PaginationQuery
 
 businesses_owners_router = APIRouter()
 
@@ -32,13 +33,12 @@ async def list_owners(
     db: DbSession,
     _: BusinessOwnerOrAdminUser,
     business_id: uuid.UUID,
-    page: int = Query(1, ge=1),
-    size: int = Query(DEFAULT_PAGE_SIZE, ge=1, le=MAX_PAGE_SIZE),
+    pagination: PaginationQuery,
 ) -> PaginatedResponse[OwnershipRecordResponse]:
     return await OwnershipController(db).get_all(
         business_id,
-        page=page,
-        size=size,
+        page=pagination.page,
+        size=pagination.size,
         url_base=f"/businesses/{business_id}/owners",
     )
 

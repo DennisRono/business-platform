@@ -23,7 +23,7 @@ class CompensationRecordBase(BaseModel):
 
 class CompensationRecordCreate(CompensationRecordBase):
     """Schema for creating a new compensation record. Inherits all base fields."""
-    pass
+    model_config = ConfigDict(extra="forbid")
 
 
 class CompensationRecordUpdate(BaseModel):
@@ -33,6 +33,8 @@ class CompensationRecordUpdate(BaseModel):
     end_date: Optional[date] = None
     is_current: Optional[bool] = None
     notes: Optional[str] = None
+
+    model_config = ConfigDict(extra="forbid")
 
 
 class CompensationRecordResponse(CompensationRecordBase, BaseSchema):

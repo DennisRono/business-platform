@@ -25,9 +25,9 @@ from business_platform.schemas.business_relationship import (
 
 from business_platform.utils.constants import (
     AUTH_RESPONSES,
-    DEFAULT_PAGE_SIZE,
-    MAX_PAGE_SIZE,
 )
+from business_platform.utils.pagination import PaginationQuery
+from business_platform.utils.pagination import PaginationQuery
 
 base_router = APIRouter()
 
@@ -49,19 +49,14 @@ DbSession: TypeAlias = Annotated[
 async def list_businesses(
     db: DbSession,
     current_user: BusinessAccessUser,
-    page: int = Query(1, ge=1),
-    size: int = Query(
-        DEFAULT_PAGE_SIZE,
-        ge=1,
-        le=MAX_PAGE_SIZE,
-    ),
+    pagination: PaginationQuery,
     q: str | None = Query(None),
     sort: str | None = Query(None),
 ) -> PaginatedResponse[BusinessResponse]:
     return await BusinessController(db).get_all(
         current_user=current_user,
-        page=page,
-        size=size,
+        page=pagination.page,
+        size=pagination.size,
         q=q,
         sort=sort,
         url_base="/businesses",
@@ -145,17 +140,12 @@ async def get_business_relationships(
     db: DbSession,
     _: BusinessAccessUser,
     business_id: uuid.UUID,
-    page: int = Query(1, ge=1),
-    size: int = Query(
-        DEFAULT_PAGE_SIZE,
-        ge=1,
-        le=MAX_PAGE_SIZE,
-    ),
+    pagination: PaginationQuery,
 ) -> PaginatedResponse[BusinessRelationshipResponse]:
     return await BusinessController(db).get_relationships(
         business_id=business_id,
-        page=page,
-        size=size,
+        page=pagination.page,
+        size=pagination.size,
         url_base=f"/businesses/{business_id}/relationships",
     )
 

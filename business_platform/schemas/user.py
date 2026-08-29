@@ -2,20 +2,21 @@ import uuid
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel, EmailStr, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict
 
 from business_platform.utils.enums import Role
+from business_platform.utils.types import LooseEmail
 
 
 class UserCreate(BaseModel):
     """Payload for POST /api/v1/dashboard/register."""
     username: str = Field(..., min_length=3, max_length=50)
-    email: EmailStr = Field(...)
+    email: LooseEmail
     full_name: Optional[str] = Field(None, max_length=255)
     role: Role = Field(default=Role.CUSTOMER)
     password: str = Field(..., min_length=8)
 
-    model_config = ConfigDict(extra="ignore")
+    model_config = ConfigDict(extra="forbid")
 
 
 class UserUpdate(BaseModel):
@@ -24,7 +25,7 @@ class UserUpdate(BaseModel):
     role: Optional[Role] = None
     is_active: Optional[bool] = None
 
-    model_config = ConfigDict(extra="ignore")
+    model_config = ConfigDict(extra="forbid")
 
 
 class UserResponse(BaseModel):
@@ -33,7 +34,7 @@ class UserResponse(BaseModel):
     password hash. Matches the OpenAPI UserResponse component exactly.
     """
     username: str = Field(..., max_length=50, min_length=3)
-    email: EmailStr
+    email: LooseEmail
     full_name: Optional[str] = Field(None, max_length=255)
     role: Role = Field(default=Role.CUSTOMER)
     id: uuid.UUID
@@ -55,3 +56,5 @@ class Token(BaseModel):
 
 class RefreshRequest(BaseModel):
     refresh_token: str
+
+    model_config = ConfigDict(extra="forbid")

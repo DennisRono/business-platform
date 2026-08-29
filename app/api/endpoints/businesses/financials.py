@@ -3,7 +3,7 @@ from __future__ import annotations
 import uuid
 from typing import Annotated, TypeAlias
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from business_platform.controllers import FinancialController
@@ -16,7 +16,8 @@ from business_platform.schemas.financial import (
     FinancialTransactionCreate,
     FinancialTransactionResponse,
 )
-from business_platform.utils.constants import AUTH_RESPONSES, DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE
+from business_platform.utils.constants import AUTH_RESPONSES
+from business_platform.utils.pagination import PaginationQuery
 
 businesses_financials_router = APIRouter()
 
@@ -33,13 +34,12 @@ async def list_transactions(
     db: DbSession,
     _: BusinessAccessUser,
     business_id: uuid.UUID,
-    page: int = Query(1, ge=1),
-    size: int = Query(DEFAULT_PAGE_SIZE, ge=1, le=MAX_PAGE_SIZE),
+    pagination: PaginationQuery,
 ) -> PaginatedResponse[FinancialTransactionResponse]:
     return await FinancialController(db).get_transactions(
         business_id,
-        page=page,
-        size=size,
+        page=pagination.page,
+        size=pagination.size,
         url_base=f"/businesses/{business_id}/financials/transactions",
     )
 
@@ -72,13 +72,12 @@ async def list_accounts(
     db: DbSession,
     _: BusinessAccessUser,
     business_id: uuid.UUID,
-    page: int = Query(1, ge=1),
-    size: int = Query(DEFAULT_PAGE_SIZE, ge=1, le=MAX_PAGE_SIZE),
+    pagination: PaginationQuery,
 ) -> PaginatedResponse[FinancialAccountResponse]:
     return await FinancialController(db).get_accounts(
         business_id,
-        page=page,
-        size=size,
+        page=pagination.page,
+        size=pagination.size,
         url_base=f"/businesses/{business_id}/financials/accounts",
     )
 

@@ -5,12 +5,13 @@ from typing import Any
 from uuid import UUID
 
 from sqlalchemy import func, select
-from sqlalchemy.exc import IntegrityError as SQLAlchemyIntegrityError
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import DataError, IntegrityError as SQLAlchemyIntegrityError
+from sqlalchemy.exc import OperationalError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from business_platform.controllers.base import _StubController
 from business_platform.core.exceptions import (
+    BadRequestError,
     BusinessLogicError,
     ConflictError,
     DatabaseError,
@@ -83,6 +84,11 @@ class EmployeeController(_StubController):
 
         except NotFoundError:
             raise
+
+        except (DataError, OperationalError) as exc:
+            raise BadRequestError(
+                message="Invalid query parameters caused a database error."
+            ) from exc
 
         except SQLAlchemyError as exc:
             raise DatabaseError(message="Failed to fetch employees") from exc
@@ -158,6 +164,12 @@ class EmployeeController(_StubController):
                 )
             ) from exc
 
+        except (DataError, OperationalError) as exc:
+            await db.rollback()
+            raise BadRequestError(
+                message="The request contains invalid data that could not be processed."
+            ) from exc
+
         except SQLAlchemyError as exc:
             await db.rollback()
 
@@ -229,6 +241,11 @@ class EmployeeController(_StubController):
         except NotFoundError:
             raise
 
+        except (DataError, OperationalError) as exc:
+            raise BadRequestError(
+                message="Invalid query parameters caused a database error."
+            ) from exc
+
         except SQLAlchemyError as exc:
             raise DatabaseError(message="Failed to fetch employee history") from exc
 
@@ -285,6 +302,12 @@ class EmployeeController(_StubController):
         except (NotFoundError, BusinessLogicError):
             await db.rollback()
             raise
+
+        except (DataError, OperationalError) as exc:
+            await db.rollback()
+            raise BadRequestError(
+                message="The request contains invalid data that could not be processed."
+            ) from exc
 
         except SQLAlchemyError as exc:
             await db.rollback()

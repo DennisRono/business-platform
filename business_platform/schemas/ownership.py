@@ -24,6 +24,8 @@ class OwnershipRecordCreate(OwnershipRecordBase):
     """Schema for creating a new ownership record. Inherits all base fields."""
     status: OwnershipStatus = Field(default=OwnershipStatus.PENDING)
 
+    model_config = ConfigDict(extra="forbid")
+
 
 class OwnershipTransitionRequest(BaseModel):
     """
@@ -33,6 +35,8 @@ class OwnershipTransitionRequest(BaseModel):
     """
     to_status: OwnershipStatus = Field(...)
     reason: Optional[str] = Field(None, max_length=2000)
+
+    model_config = ConfigDict(extra="forbid")
 
 
 class OwnershipRecordResponse(OwnershipRecordBase, BaseSchema):

@@ -23,12 +23,16 @@ class FinancialAccountCreate(FinancialAccountBase):
     """Schema for creating a new financial account. Inherits all base fields."""
     status: AccountStatus = Field(default=AccountStatus.ACTIVE)
 
+    model_config = ConfigDict(extra="forbid")
+
 
 class FinancialAccountUpdate(BaseModel):
     """Schema for partially updating a financial account. All fields are optional."""
     account_name: Optional[str] = Field(None, min_length=1, max_length=150)
     status: Optional[AccountStatus] = None
     closed_date: Optional[date] = None
+
+    model_config = ConfigDict(extra="forbid")
 
 
 class FinancialAccountResponse(FinancialAccountBase, BaseSchema):
@@ -63,12 +67,16 @@ class FinancialTransactionCreate(FinancialTransactionBase):
     """Schema for creating a new financial transaction. Inherits all base fields."""
     status: TransactionStatus = Field(default=TransactionStatus.COMPLETED)
 
+    model_config = ConfigDict(extra="forbid")
+
 
 class FinancialTransactionUpdate(BaseModel):
     """Schema for partially updating a financial transaction. All fields are optional."""
     status: Optional[TransactionStatus] = None
     category: Optional[str] = Field(None, max_length=100)
     description: Optional[str] = None
+
+    model_config = ConfigDict(extra="forbid")
 
 
 class FinancialTransactionResponse(FinancialTransactionBase, BaseSchema):

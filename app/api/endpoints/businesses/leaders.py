@@ -3,7 +3,7 @@ from __future__ import annotations
 import uuid
 from typing import Annotated, TypeAlias
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from business_platform.controllers import LeadershipController
@@ -11,7 +11,8 @@ from business_platform.db.database import get_db
 from business_platform.dependencies.authorization import BusinessAccessUser
 from business_platform.schemas.base import PaginatedResponse
 from business_platform.schemas.leader import LeaderCreate, LeaderResponse
-from business_platform.utils.constants import AUTH_RESPONSES, DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE
+from business_platform.utils.constants import AUTH_RESPONSES
+from business_platform.utils.pagination import PaginationQuery
 
 businesses_leaders_router = APIRouter()
 
@@ -28,13 +29,12 @@ async def list_leaders(
     db: DbSession,
     _: BusinessAccessUser,
     business_id: uuid.UUID,
-    page: int = Query(1, ge=1),
-    size: int = Query(DEFAULT_PAGE_SIZE, ge=1, le=MAX_PAGE_SIZE),
+    pagination: PaginationQuery,
 ) -> PaginatedResponse[LeaderResponse]:
     return await LeadershipController(db).get_all(
         business_id,
-        page=page,
-        size=size,
+        page=pagination.page,
+        size=pagination.size,
         url_base=f"/businesses/{business_id}/leaders",
     )
 

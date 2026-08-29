@@ -17,7 +17,7 @@ class MembershipBase(BaseModel):
 
 class MembershipCreate(MembershipBase):
     """Schema for inviting/creating a new membership. Inherits all base fields."""
-    pass
+    model_config = ConfigDict(extra="forbid")
 
 
 class MembershipUpdate(BaseModel):
@@ -25,6 +25,8 @@ class MembershipUpdate(BaseModel):
     role: Optional[MembershipRole] = None
     status: Optional[MembershipStatus] = None
     joined_at: Optional[datetime] = None
+
+    model_config = ConfigDict(extra="forbid")
 
 
 class MembershipResponse(MembershipBase, BaseSchema):

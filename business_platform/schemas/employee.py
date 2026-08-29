@@ -2,7 +2,7 @@ import uuid
 from datetime import date
 from typing import Optional
 
-from pydantic import BaseModel, EmailStr, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict
 
 from business_platform.schemas.base import BaseSchema
 from business_platform.utils.enums import (
@@ -10,6 +10,7 @@ from business_platform.utils.enums import (
     EmploymentStatus,
     EmploymentType,
 )
+from business_platform.utils.types import LooseEmail
 
 
 class EmployeeBase(BaseModel):
@@ -21,13 +22,15 @@ class EmployeeBase(BaseModel):
     department: Optional[str] = Field(None, max_length=150)
     employment_type: EmploymentType = Field(default=EmploymentType.FULL_TIME)
     hire_date: Optional[date] = None
-    work_email: Optional[EmailStr] = None
+    work_email: Optional[LooseEmail] = None
     work_phone: Optional[str] = Field(None, max_length=50)
 
 
 class EmployeeCreate(EmployeeBase):
     """Schema for creating a new employee record. Inherits all base fields."""
     employment_status: EmploymentStatus = Field(default=EmploymentStatus.ACTIVE)
+
+    model_config = ConfigDict(extra="forbid")
 
 
 class EmployeeUpdate(BaseModel):
@@ -37,14 +40,18 @@ class EmployeeUpdate(BaseModel):
     department: Optional[str] = Field(None, max_length=150)
     employment_type: Optional[EmploymentType] = None
     employment_status: Optional[EmploymentStatus] = None
-    work_email: Optional[EmailStr] = None
+    work_email: Optional[LooseEmail] = None
     work_phone: Optional[str] = Field(None, max_length=50)
+
+    model_config = ConfigDict(extra="forbid")
 
 
 class EmployeeTerminateRequest(BaseModel):
     """Schema for POST .../employees/{person_id}/terminate."""
     termination_date: date = Field(...)
     termination_reason: Optional[str] = Field(None, max_length=2000)
+
+    model_config = ConfigDict(extra="forbid")
 
 
 class EmployeeResponse(EmployeeBase, BaseSchema):

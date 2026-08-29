@@ -23,6 +23,8 @@ class TaskCreate(TaskBase):
     """Schema for creating a new task. Inherits all base fields."""
     status: TaskStatus = Field(default=TaskStatus.PENDING)
 
+    model_config = ConfigDict(extra="forbid")
+
 
 class TaskUpdate(BaseModel):
     """Schema for partially updating a task. All fields are optional."""
@@ -32,6 +34,8 @@ class TaskUpdate(BaseModel):
     priority: Optional[TaskPriority] = None
     due_date: Optional[datetime] = None
     assigned_to_id: Optional[uuid.UUID] = None
+
+    model_config = ConfigDict(extra="forbid")
 
 
 class TaskResponse(TaskBase, BaseSchema):
